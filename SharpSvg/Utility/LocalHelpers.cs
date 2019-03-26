@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Peracto.Svg.Types;
 
-namespace Peracto.Svg.Converters
+namespace Peracto.Svg.Utility
 {
   public static class LocalHelpers
   {

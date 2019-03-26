@@ -1,5 +1,4 @@
-﻿using Peracto.Svg.Render.Dx.Core;
-using Peracto.Svg.Types;
+﻿using Peracto.Svg.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;

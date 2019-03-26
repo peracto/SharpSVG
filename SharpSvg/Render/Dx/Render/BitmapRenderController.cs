@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Peracto.Svg.Render.Dx.Core;
 using Peracto.Svg.Types;
 using D2D1 = SharpDX.Direct2D1;
 using DXGI = SharpDX.DXGI;

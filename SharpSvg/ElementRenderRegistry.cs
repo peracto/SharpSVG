@@ -1,9 +1,8 @@
-﻿using Peracto.Svg.Render.Dx.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Peracto.Svg.Types;
 
-namespace Peracto.Svg.Render.Dx.Utility
+namespace Peracto.Svg
 {
   public class ElementRenderRegistry<TRenderer> where TRenderer : class
   {

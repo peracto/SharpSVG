@@ -1,7 +1,7 @@
 ﻿using System;
 using Peracto.Svg.Types;
 
-namespace Peracto.Svg.Render.Dx.Core
+namespace Peracto.Svg
 {
   public class FrameContext : IFrameContext
   {

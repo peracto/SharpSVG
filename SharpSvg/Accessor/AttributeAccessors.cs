@@ -81,14 +81,13 @@ namespace Peracto.Svg.Accessor
     public static readonly IAccessor<string> TextTransform = new AttributeAccessor<string>("text-transform");
 
 
-    public static readonly IAccessor<FontWeight> FontWeight = new AttributeAccessor<FontWeight>("font-weight", Text.FontWeight.Normal, true);
     public static readonly IAccessor<string> WordSpacing = new AttributeAccessor<string>("word-spacing");
     public static readonly IAccessor<string> LetterSpacing = new AttributeAccessor<string>("letter-spacing");
-
-    public static readonly IAccessor<FontStretch> FontStretch = new AttributeAccessor<FontStretch>("font-stretch", Text.FontStretch.Normal);
-    public static readonly IAccessor<DominantBaseline> DominantBaseline = new AttributeAccessor<DominantBaseline>("dominant-baseline", Text.DominantBaseline.Auto, true);
-    public static readonly IAccessor<TextAnchor> TextAnchor = new AttributeAccessor<TextAnchor>("text-anchor", Text.TextAnchor.Inherit);
-    public static readonly IAccessor<TextDecoration> TextDecoration = new AttributeAccessor<TextDecoration>("text-decoration", Text.TextDecoration.Inherit);
-    public static readonly IAccessor<FontStyle> FontStyle = new AttributeAccessor<FontStyle>("font-style", Text.FontStyle.Inherit);
+    public static readonly IAccessor<FontWeight> FontWeight = new EnumAttributeAccessor<FontWeight>("font-weight", Text.FontWeight.Normal,Text.FontWeight.Inherit,true);
+    public static readonly IAccessor<FontStretch> FontStretch = new EnumAttributeAccessor<FontStretch>("font-stretch", Text.FontStretch.Normal,Text.FontStretch.Inherit);
+    public static readonly IAccessor<DominantBaseline> DominantBaseline = new EnumAttributeAccessor<DominantBaseline>("dominant-baseline", Text.DominantBaseline.Auto, Text.DominantBaseline.Inherit, true);
+    public static readonly IAccessor<TextAnchor> TextAnchor = new EnumAttributeAccessor<TextAnchor>("text-anchor", Text.TextAnchor.Inherit,Text.TextAnchor.Inherit);
+    public static readonly IAccessor<TextDecoration> TextDecoration = new EnumAttributeAccessor<TextDecoration>("text-decoration", Text.TextDecoration.Inherit, Text.TextDecoration.Inherit);
+    public static readonly IAccessor<FontStyle> FontStyle = new EnumAttributeAccessor<FontStyle>("font-style", Text.FontStyle.Normal, Text.FontStyle.Inherit);
   }
 }

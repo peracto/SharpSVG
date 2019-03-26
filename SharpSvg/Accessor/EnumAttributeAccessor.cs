@@ -1,32 +1,26 @@
-﻿using System;
-
-namespace Peracto.Svg.Accessor
+﻿namespace Peracto.Svg.Accessor
 {
-  public class AttributeAccessor<T> : IAccessor<T>
-  {
+  public class EnumAttributeAccessor<T> : IAccessor<T> 
+  { 
     private bool Inherit { get; }
+
     public string AttributeName { get; }
     public T DefaultValue { get; }
+    public T InheritValue { get; }
 
-    public AttributeAccessor(string name)
-    {
-      AttributeName = name;
-      DefaultValue = default(T);
-      Inherit = false;
-    }
-
-    public AttributeAccessor(string name, T defaultValue, bool inherit = false)
+    public EnumAttributeAccessor(string name, T defaultValue, T inheritValue, bool inherit = false)
     {
       AttributeName = name;
       DefaultValue = defaultValue;
       Inherit = inherit;
+      InheritValue = inheritValue;
     }
 
     public T GetValue(IElement element)
     {
       while (element != null)
       {
-        if (element.Attributes.TryGetValue<T>(AttributeName, out var value))
+        if (element.Attributes.TryGetValue<T>(AttributeName, out var value) && !value.Equals(InheritValue))
           return value;
         element = Inherit ? element.Parent : null;
       }
