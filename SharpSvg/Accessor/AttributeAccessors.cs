@@ -54,7 +54,7 @@ namespace Peracto.Svg.Accessor
     public static readonly IAccessor<IBrushFactory> Fill = new AttributeAccessor<IBrushFactory>("fill", SolidColourBrushFactory.Black, true);
     public static readonly IAccessor<IBrushFactory> Color = new AttributeAccessor<IBrushFactory>("color", SolidColourBrushFactory.Black);
     public static readonly IAccessor<HrefServer> Href = new AttributeAccessor<HrefServer>("href");
-    public static readonly IAccessor<float[]> StrokeDashArray = new AttributeAccessor<float[]>("stroke-dasharray");
+    public static readonly IAccessor<Measure[]> StrokeDashArray = new AttributeAccessor<Measure[]>("stroke-dasharray");
 
     public static readonly IAccessor<PreserveAspectRatio> PreserveAspectRatio = new AttributeAccessor<PreserveAspectRatio>("preserveaspectratio", Image.PreserveAspectRatio.XMidYMidMeet);
 
@@ -80,6 +80,7 @@ namespace Peracto.Svg.Accessor
     public static readonly IAccessor<PxPoint[]> Points = new AttributeAccessor<PxPoint[]>("points");
     public static readonly IAccessor<string> TextTransform = new AttributeAccessor<string>("text-transform");
 
+    public static readonly IAccessor<ClipPathUnits> ClipPathUnits = new AttributeAccessor<ClipPathUnits>("clipPathUnits",Brush.ClipPathUnits.UserSpaceOnUse);
 
     public static readonly IAccessor<string> WordSpacing = new AttributeAccessor<string>("word-spacing");
     public static readonly IAccessor<string> LetterSpacing = new AttributeAccessor<string>("letter-spacing");

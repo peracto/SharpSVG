@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using ExCSS;
 
 namespace Peracto.Svg
 {
@@ -62,7 +63,7 @@ namespace Peracto.Svg
     {
       var settings = new XmlReaderSettings
       {
-        //DtdProcessing = DtdProcessing.Parse,
+        DtdProcessing = DtdProcessing.Ignore,
         IgnoreComments = true,
         IgnoreProcessingInstructions = true,
         IgnoreWhitespace = true,
@@ -72,6 +73,45 @@ namespace Peracto.Svg
       using (var reader = XmlReader.Create(stream, settings))
         return await Parse(reader, baseUri);
     }
+
+    private void ApplyStyles(IDocument document)
+    {
+      var styles = document.Descendants("style").ToList();
+      if (styles.Count == 0) return;
+
+      var cssTotal = styles.Select((s) => s.Content).Aggregate((p, c) => p + Environment.NewLine + c);
+      var cssParser = new ExCSS.Parser();
+      var sheet = cssParser.Parse(cssTotal);
+      AggregateSelectorList aggList;
+      IEnumerable<BaseSelector> selectors;
+      IEnumerable<IElement> elemsToStyle;
+
+      foreach (var rule in sheet.StyleRules)
+      {
+        aggList = rule.Selector as AggregateSelectorList;
+        if (aggList != null && aggList.Delimiter == ",")
+        {
+          selectors = aggList;
+        }
+        else
+        {
+          selectors = Enumerable.Repeat(rule.Selector, 1);
+        }
+
+        foreach (var selector in selectors)
+        {
+          elemsToStyle = document.QuerySelectorAll(rule.Selector.ToString(), elementFactory);
+          foreach (var elem in elemsToStyle)
+          {
+            foreach (var decl in rule.Declarations)
+            {
+              elem.AddStyle(decl.Name, decl.Term.ToString(), rule.Selector.GetSpecificity());
+            }
+          }
+        }
+      }
+    }
+
 
     private async Task<Document> Parse(XmlReader reader, Uri baseUri)
     {
@@ -86,11 +126,12 @@ namespace Peracto.Svg
         {
           case XmlNodeType.Element:
             var isEmptyElement = reader.IsEmptyElement;
-            var element = ElementFactory.Create(reader.Name);
+            var elementType = reader.Name;
+            var element = ElementFactory.Create(elementType);
 
             var mappedAttributes = (
               from attr in GetAttributes(reader)
-              let attribute = AttributeFactory.Create(element, attr.Key.Trim(), attr.Value.Trim())
+              let attribute = AttributeFactory.Create(elementType, attr.Key.Trim(), attr.Value.Trim())
               where attribute != null
               select attribute
             );
@@ -101,7 +142,7 @@ namespace Peracto.Svg
             {
               var mappedAttributes2 = (
                 from attr in styles
-                let attribute = AttributeFactory.Create(element, attr.Key.Trim(), attr.Value.Trim())
+                let attribute = AttributeFactory.Create(elementType, attr.Key.Trim(), attr.Value.Trim())
                 where attribute != null
                 select attribute
               );

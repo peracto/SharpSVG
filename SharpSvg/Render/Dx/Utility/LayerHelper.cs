@@ -1,6 +1,8 @@
 ﻿using Peracto.Svg.Render.Dx.Path;
 using Peracto.Svg.Types;
 using System;
+using System.Diagnostics;
+using Peracto.Svg.Render.Dx.Font;
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;
 using DXM = SharpDX.Mathematics.Interop;
@@ -56,12 +58,36 @@ namespace Peracto.Svg.Render.Dx.Utility
         });
     }
 
-    public static IDisposable Create(D2D1.RenderTarget target, IElement element, IFrameContext context, bool setPosition)
+    public static IDisposable Create(D2D1.RenderTarget target, FontManager fontManager, IElement element, IFrameContext context, bool setPosition)
     {
       var t = TransformHelper.Create(target, element, context, setPosition);
+      var opacity = element.GetOpacity();
       var clip = element.GetClipPath();
-      if (clip == null) return t;
-      var geom = ClipPathBuilder.Create(target, context, clip);
+
+      Console.WriteLine($"Creating layer {element.ElementType} Opacity:{opacity} Clip:{clip}");
+
+      if (clip == null && opacity>=1) return t;
+
+      if (clip == null)
+      {
+        return Disposable.CreateAggregateDispose(
+          t,
+          new LayerHelper(
+            target,
+            new D2D1.LayerParameters()
+            {
+              GeometricMask = null,
+              MaskTransform = DX.Matrix3x2.Identity,
+              ContentBounds = new DXM.RawRectangleF(0f, 0f, 999999, 999999),
+              LayerOptions = D2D1.LayerOptions.None,
+              Opacity = opacity,
+              OpacityBrush = null
+            }
+          )
+        );
+      }
+
+      var geom = ClipPathBuilder.Create(target, fontManager, context, clip, element);
       if (geom == null) return t;
 
       return Disposable.CreateAggregateDispose(
@@ -74,7 +100,7 @@ namespace Peracto.Svg.Render.Dx.Utility
             MaskTransform = DX.Matrix3x2.Identity,
             ContentBounds = new DXM.RawRectangleF(0f, 0f, 999999,999999), 
             LayerOptions = D2D1.LayerOptions.None,
-            Opacity = 1,
+            Opacity = opacity,
             OpacityBrush = null
           }
           )

@@ -43,7 +43,7 @@ namespace Peracto.Svg.Parser
     public static readonly PercentageAttributeConverter Opacity = new PercentageAttributeConverter("opacity");
     public static readonly PercentageAttributeConverter StrokeOpacity = new PercentageAttributeConverter("stroke-opacity");
     public static readonly PercentageAttributeConverter StopOpacity = new PercentageAttributeConverter("stop-opacity");
-    public static readonly NumberListAttributeConverter StrokeDashArray = new NumberListAttributeConverter("stroke-dasharray");
+    public static readonly MeasureListAttributeConverter StrokeDashArray = new MeasureListAttributeConverter("stroke-dasharray");
     public static readonly PercentageAttributeConverter StrokeDashOffset = new PercentageAttributeConverter("stroke-dashoffset");
     public static readonly GenericEnumConverter<LineCap> StrokeLineCap = new GenericEnumConverter<LineCap>("stroke-linecap");
     public static readonly GenericEnumConverter<LineJoin> StrokeLineJoin = new GenericEnumConverter<LineJoin>("stroke-linejoin");
@@ -63,6 +63,7 @@ namespace Peracto.Svg.Parser
     public static readonly TokenListAttributeConverter FontFamily = new TokenListAttributeConverter("font-family", @"[\s,]+");
     public static readonly MeasureAttributeConverter FontSize = new MeasureAttributeConverter("font-size", MeasureUsage.Vertical);
     public static readonly GenericEnumConverter<GradientUnits> GradientUnits = new GenericEnumConverter<GradientUnits>("gradientUnits");
+    public static readonly GenericEnumConverter<ClipPathUnits> ClipPathUnits = new GenericEnumConverter<ClipPathUnits>("clipPathUnits");
     public static readonly GenericEnumConverter<FontWeight> FontWeight = new GenericEnumConverter<FontWeight>("font-weight");
     public static readonly GenericEnumConverter<FontStyle> FontStyle = new GenericEnumConverter<FontStyle>("font-style");
     public static readonly GenericEnumConverter<FontStretch> FontStretch = new GenericEnumConverter<FontStretch>("font-stretch");

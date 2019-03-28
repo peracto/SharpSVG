@@ -5,18 +5,18 @@ namespace Peracto.Svg.Converters
 {
   public class PercentageAttributeConverter : AttributeConverterBase<Percent>
   {
-    private static readonly Regex PercentRegex = new Regex(@"^\s*([+-]?[0-9]+(?:\.[0-9]*)?)([%])?\s*$");
+    private static readonly Regex PercentRegex = new Regex(@"^\s*([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*)(?:[eE][+-]?\d+)?)([%])?\s*$");
 
     public PercentageAttributeConverter(string name) : base(name)
     {
     }
 
-    protected override bool TryCreate(string attributeValue, IElement elementFactory, out Percent rc)
+    protected override bool TryCreate(string attributeValue, out Percent rc)
     {
       return TryParse(attributeValue, out rc);
     }
 
-    private static bool TryParse(string value, out Percent percent)
+    public static bool TryParse(string value, out Percent percent)
     {
       var match = PercentRegex.Match(value);
 

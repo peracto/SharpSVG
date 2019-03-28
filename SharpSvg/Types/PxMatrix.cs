@@ -99,8 +99,8 @@ namespace Peracto.Svg.Types
     {
       return new PxMatrix(
         1, //m11
-        (float) Math.Tan(angleY), //m12
-        (float) Math.Tan(angleX), //m21
+        angleY == 0 ? 0f : (float)Math.Tan(angleY * (Math.PI / 180f)), //m21
+        angleX == 0 ? 0f : (float) Math.Tan(angleX * (Math.PI / 180f)), //m12
         1 //m22
       );
     }

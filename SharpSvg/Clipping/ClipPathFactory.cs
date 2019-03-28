@@ -23,15 +23,15 @@ namespace Peracto.Svg.Converters
       var element = context.GetElementById(tag);
       if (element == null) return null;
 
-      clip = CreateNew(context,element, tag);
+      clip = CreateNew(element, tag);
       context.OwnerDocument.SetResource("CLIPPATH::" + tag, clip);
       return clip;
     }
 
-    private IClip CreateNew(IElement context, IElement element, string tag)
+    private IClip CreateNew(IElement element, string tag)
     {
       var children = element.Children.ToList();
-      return new Clip(children, tag);
+      return new Clip(children, tag, element.GetClipPathUnits());
     }
   }
 }

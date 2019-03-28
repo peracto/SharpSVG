@@ -29,7 +29,6 @@ namespace Peracto.Svg.Render.Dx.Render
 
     public async Task<RenderStream> LoadToStream(Uri href, Uri baseUri, Func<Stream, D2D1.Bitmap> bitmapFactory)
     {
-      Console.WriteLine($"Loading Stream {href}");
       switch (href.Scheme)
       {
         case "internal":

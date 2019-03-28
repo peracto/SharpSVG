@@ -45,7 +45,8 @@ namespace Peracto.Svg.Render.Dx.Brush
       return dxBrush;
     }
 
-    public D2D1.Brush CreateLinearGradientBrush(IElement element, IFrameContext context, float opacity, LinearGradientBrush brush)
+    public D2D1.Brush CreateLinearGradientBrush(IElement element, IFrameContext context, float opacity,
+      LinearGradientBrush brush)
     {
       var tag = brush.GradientUnits == GradientUnits.UserSpaceOnUse ? $"{brush.Tag}::{context.LayerId}" : null;
       if (tag != null && _brushes.TryGetValue(tag, out var dxBrush)) return dxBrush;
@@ -62,28 +63,38 @@ namespace Peracto.Svg.Render.Dx.Brush
       var dy = y2 - y1;
       var length = (float) Math.Sqrt((dx * dx) + (dy * dy));
 
-      var gsc = (from stop in brush.Stops
-        select new D2D1.GradientStop()
-        {
-          Color = ResolveSolidColour(stop.Colour.Create(element), stop.Opacity),
-          Position = ResolvePercent(stop.Offset, length)
-        }).ToArray();
 
-      dxBrush = new D2D1.LinearGradientBrush(
-        _dc,
-        new D2D1.LinearGradientBrushProperties()
-        {
-          StartPoint = new DX.RawVector2(x1+renderSize.X, y1+renderSize.Y),
-          EndPoint = new DX.RawVector2(x2+renderSize.X, y2+renderSize.Y)
-        },
-        new D2D1.GradientStopCollection(_dc, gsc, D2D1.Gamma.StandardRgb, D2D1.ExtendMode.Clamp)
-      );
+      try
+      {
+        var gsc = (
+          from stop in brush.Stops
+          select new D2D1.GradientStop()
+          {
+            Color = ResolveSolidColour(stop.Colour.Create(element), stop.Opacity),
+            Position = ResolvePercent(stop.Offset, length)
+          }
+        ).ToArray();
 
-      if (opacity < 1) dxBrush.Opacity = opacity;
-      if (brush.GradientTransform != null) dxBrush.Transform = brush.GradientTransform.ToDx();
+        dxBrush = new D2D1.LinearGradientBrush(
+          _dc,
+          new D2D1.LinearGradientBrushProperties()
+          {
+            StartPoint = new DX.RawVector2(x1 + renderSize.X, y1 + renderSize.Y),
+            EndPoint = new DX.RawVector2(x2 + renderSize.X, y2 + renderSize.Y)
+          },
+          new D2D1.GradientStopCollection(_dc, gsc, D2D1.Gamma.StandardRgb, D2D1.ExtendMode.Clamp)
+        );
 
-      if(tag!=null) _brushes.Add(tag, dxBrush);
-      return dxBrush;
+        if (opacity < 1) dxBrush.Opacity = opacity;
+        if (brush.GradientTransform != null) dxBrush.Transform = brush.GradientTransform.ToDx();
+
+        if (tag != null) _brushes.Add(tag, dxBrush);
+        return dxBrush;
+      }
+      catch (Exception ex)
+      {
+        throw ex;
+      }
     }
 
     public D2D1.Brush CreateRadialGradientBrush(IElement element, IFrameContext context, float opacity, RadialGradientBrush brush)

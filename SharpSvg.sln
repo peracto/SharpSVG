@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpSvg", "SharpSvg\SharpSvg.csproj", "{0A52BBC4-7FAA-43A4-B64C-9774DC0D7C6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpSvg", "SharpSvg\SharpSvg.csproj", "{0A52BBC4-7FAA-43A4-B64C-9774DC0D7C6E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpSvg.Test", "SharpSvg.Test\SharpSvg.Test.csproj", "{45FC11CA-C38F-4605-9A4C-49250E3642B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{0A52BBC4-7FAA-43A4-B64C-9774DC0D7C6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A52BBC4-7FAA-43A4-B64C-9774DC0D7C6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A52BBC4-7FAA-43A4-B64C-9774DC0D7C6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45FC11CA-C38F-4605-9A4C-49250E3642B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45FC11CA-C38F-4605-9A4C-49250E3642B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45FC11CA-C38F-4605-9A4C-49250E3642B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45FC11CA-C38F-4605-9A4C-49250E3642B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

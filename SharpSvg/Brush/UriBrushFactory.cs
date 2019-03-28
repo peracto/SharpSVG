@@ -70,7 +70,7 @@ namespace Peracto.Svg.Brush
         stops
           .ChildrenOfType("stop")
           .Select(stop => new Stop(
-            AA.StopColor.GetValue(stop),
+            AA.StopColor.GetValue(stop)??SolidColourBrushFactory.Black,
             AA.Offset.GetValue(stop),
             AA.StopOpacity.GetValue(stop).AsCheckedNumber()
           ))

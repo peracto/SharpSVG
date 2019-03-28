@@ -63,8 +63,13 @@ namespace Peracto.Svg.Render.Dx.Render
             dc.Target = commandList;
             dc.BeginDraw();
 
-            var rootFrame = FrameContext.CreateRoot(pageSize.Width, pageSize.Height);
-            var frameSize = svg.GetSize(rootFrame, new PxSize(pageSize.Width, pageSize.Height));
+            var xx = svg.TryGetViewBox(out var vb) ? vb.Size : new PxSize(pageSize.Width, pageSize.Height);
+            var rootFrame = FrameContext.CreateRoot(xx.Width, xx.Height);
+            var frameSize = svg.GetSize(rootFrame, xx);
+
+
+           // var rootFrame = FrameContext.CreateRoot(pageSize.Width, pageSize.Height);
+           // var frameSize = svg.GetSize(rootFrame, new PxSize(pageSize.Width, pageSize.Height));
 
             var r = RenderRegistry.Get(svg.ElementType);
             if (r != null)

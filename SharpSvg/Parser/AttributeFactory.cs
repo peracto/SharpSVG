@@ -24,11 +24,11 @@ namespace Peracto.Svg.Parser
             );
         }
 
-        public IElementAttribute Create(IElement element, string name, string value)
+        public IElementAttribute Create(string elementType, string name, string value)
         {
             if (!_dict.TryGetValue(name.ToLower(), out var factory))
                 factory = RegisterGeneric(name);
-            return factory.Create(value, element);
+            return factory.Create(value);
         }
 
         private IElementAttributeFactory RegisterGeneric(string name)

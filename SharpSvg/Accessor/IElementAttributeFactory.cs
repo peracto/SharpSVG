@@ -3,6 +3,6 @@
     public interface IElementAttributeFactory
     {
         string AttributeName { get; }
-        IElementAttribute Create(string attributeValue, IElement elementFactory);
+        IElementAttribute Create(string attributeValue);
     }
 }

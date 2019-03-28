@@ -9,10 +9,12 @@ namespace Peracto.Svg.Render.Dx.IO
   public class ManagedIStream : IStream
   {
     private readonly Stream _ioStream;
+    private readonly string _streamName;
 
-    internal ManagedIStream(Stream ioStream)
+    internal ManagedIStream(Stream ioStream,string streamName)
     {
       _ioStream = ioStream ?? throw new ArgumentNullException(nameof(ioStream));
+      _streamName = streamName;
     }
 
     [SecurityCritical]
@@ -79,8 +81,9 @@ namespace Peracto.Svg.Render.Dx.IO
 
     void IStream.Clone(out IStream streamCopy)
     {
-      streamCopy = null;
-      throw new NotSupportedException();
+      Console.WriteLine($"Cloning Stream {_streamName}");
+      streamCopy = new ManagedIStream(_ioStream,_streamName);
+   //   throw new NotSupportedException();
     }
 
     void IStream.CopyTo(IStream targetStream,long bufferSize,IntPtr buffer,IntPtr bytesWrittenPtr)

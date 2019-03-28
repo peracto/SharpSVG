@@ -1,11 +1,12 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 using Peracto.Svg.Types;
 
 namespace Peracto.Svg.Converters
 {
   public class MeasureAttributeConverter : AttributeConverterBase<Measure>
   {
-    private static readonly Regex MeasureRegex = new Regex(@"^\s*([+-]?[0-9]+(?:\.[0-9]*)?)([a-z%][a-z]?)?\s*$");
+    private static readonly Regex MeasureRegex = new Regex(@"^\s*([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*)(?:[eE][+-]?\d+)?)([a-z%]+)?\s*$");
 
     public static MeasureAttributeConverter CreateH(string name)
     {
@@ -24,12 +25,12 @@ namespace Peracto.Svg.Converters
       _measureUsage = renderingType;
     }
 
-    protected override bool TryCreate(string attributeValue, IElement elementFactory, out Measure rc)
+    protected override bool TryCreate(string attributeValue, out Measure rc)
     {
       return TryParse(attributeValue, _measureUsage, out rc);
     }
 
-    private static bool TryParse(string value, MeasureUsage measureUsage, out Measure measure)
+    public static bool TryParse(string value, MeasureUsage measureUsage, out Measure measure)
     {
       var unit = value.Trim().ToLower();
 
@@ -45,7 +46,10 @@ namespace Peracto.Svg.Converters
         return true;
       }
 
+
       var match = MeasureRegex.Match(value);
+
+    //  Console.WriteLine($"Matching {value} to Measure {match.Success}");
 
       if (!match.Success)
       {

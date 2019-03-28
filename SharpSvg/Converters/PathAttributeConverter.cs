@@ -63,7 +63,7 @@ namespace Peracto.Svg.Converters
       }
     }
 
-    protected override bool TryCreate(string attributeValue, IElement elementFactory, out Path path)
+    protected override bool TryCreate(string attributeValue,  out Path path)
     {
       var bounds = new XYRect();
       var segments = new List<PathSegment>();
@@ -215,6 +215,19 @@ namespace Peracto.Svg.Converters
             rdr.Consume();
             while (char.IsDigit(rdr.Peek())) rdr.Consume();
           }
+
+          ch = rdr.Peek();
+          if (ch == 'e' || ch == 'E')
+          {
+            rdr.Consume();
+            ch = rdr.Peek();
+            if (ch == '-' || ch == '+')
+              rdr.Consume();
+            while (char.IsDigit(rdr.Peek())) rdr.Consume();
+          }
+
+
+
 
           yield return new Token(TokenType.Number, rdr.GetString(p));
         }

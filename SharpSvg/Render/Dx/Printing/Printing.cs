@@ -10,16 +10,37 @@ namespace Peracto.Svg.Render.Dx.Printing
 {
   public static class Printing
   {
+    private static Stream CloneStream(PrintTicket ticket)
+    {
+      using (var xml = ticket.GetXmlStream())
+      using (var reader = new StreamReader(xml))
+      {
+        var text = reader.ReadToEnd();
+        // convert string to stream
+        var newstream = new MemoryStream();
+        var writer = new StreamWriter(newstream);
+        writer.Write(text);
+        writer.Flush();
+        // convert stream to string
+        newstream.Position = 0;
+        return newstream;
+      }
+
+    }
+
     public static DX.ComObject CreatePrintTarget(PrintTicket ticket, string printerName, Stream outputStream)
     {
       var bin = new Bingo();
       // ReSharper disable once SuspiciousTypeConversion.Global
       var bon = (Bongo) bin;
+
+      var xmlStream = CloneStream(ticket);
+
       return new DX.ComObject(bon.CreateDocumentPackageTargetForPrintJob(
         printerName,
         "",
-        new ManagedIStream(outputStream),
-        new ManagedIStream(ticket.GetXmlStream())
+        new ManagedIStream(outputStream,"pdf"),
+        new ManagedIStream(xmlStream,"xmlticket")
       ));
     }
 

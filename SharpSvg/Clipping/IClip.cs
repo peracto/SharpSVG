@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Peracto.Svg.Brush;
 
 namespace Peracto.Svg.Clipping
 {
@@ -6,5 +7,6 @@ namespace Peracto.Svg.Clipping
   {
     IEnumerable<IElement> Children { get; }
     string Tag { get; }
+    ClipPathUnits ClipPathUnits { get; }
   }
 }

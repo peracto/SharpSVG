@@ -9,7 +9,7 @@ namespace Peracto.Svg.Converters
         {
         }
 
-        protected override bool TryCreate(string value, IElement elementFactory,out PreserveAspectRatio  rc)
+        protected override bool TryCreate(string value, out PreserveAspectRatio  rc)
         {
             rc = Create(value.Trim());
             return rc != null;

@@ -8,7 +8,7 @@ namespace Peracto.Svg.Converters
     {
     }
 
-    protected override bool TryCreate(string uriString, IElement elementFactory, out HrefServer value)
+    protected override bool TryCreate(string uriString, out HrefServer value)
     {
       try
       {

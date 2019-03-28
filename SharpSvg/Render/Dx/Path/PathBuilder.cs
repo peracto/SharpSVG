@@ -13,7 +13,8 @@ namespace Peracto.Svg.Render.Dx.Path
   {
     private static readonly IPathVisitor<D2D1.GeometrySink> Visitor = new PathVisitor();
 
-    public static D2D1.Geometry Create(D2D1.RenderTarget target, Paths.Path path)
+    public static D2D1.Geometry Create(D2D1.RenderTarget target, Paths.Path path,
+      D2D1.FillMode fillMode = D2D1.FillMode.Winding)
     {
       var segments = path.Segments;
       var length = segments.Length;
@@ -33,7 +34,8 @@ namespace Peracto.Svg.Render.Dx.Path
         if (length == 1) return geometry;
         geometries[i++] = geometry;
       }
-      return new D2D1.GeometryGroup(target.Factory, D2D1.FillMode.Winding, geometries);
+
+      return new D2D1.GeometryGroup(target.Factory, fillMode, geometries);
     }
 
     private class PathVisitor : IPathVisitor<D2D1.GeometrySink>

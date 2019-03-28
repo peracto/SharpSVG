@@ -1,4 +1,6 @@
-﻿namespace Peracto.Svg.Brush
+﻿using Peracto.Svg.Types;
+
+namespace Peracto.Svg.Brush
 {
   public class Stroke
   {

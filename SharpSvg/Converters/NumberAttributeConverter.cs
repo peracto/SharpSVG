@@ -6,7 +6,7 @@
     {
     }
 
-    protected override bool TryCreate(string attributeValue, IElement elementFactory, out float rc)
+    protected override bool TryCreate(string attributeValue, out float rc)
     {
       return float.TryParse(attributeValue, out rc);
     }

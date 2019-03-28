@@ -14,6 +14,18 @@ namespace Peracto.Svg.Render.Dx.Font
       _factory = factory;
     }
 
+    public DW.FontFace GetFontFace(Text.Font font)
+    {
+      var fontFamily = _fontDictionary.GetFontFamily(font.Family);
+
+      var xFont = fontFamily.GetFirstMatchingFont(
+        GetFontWeight(font.Weight),
+        GetFontStretch(font.Stretch),
+        GetFontStyle(font.Style)
+      );
+      return new DW.FontFace(xFont);
+    }
+
     public DW.TextFormat GetTextFormat(Text.Font font)
     {
       var fontName = _fontDictionary.SelectFontFamilyName(font.Family, out var fontCollection);

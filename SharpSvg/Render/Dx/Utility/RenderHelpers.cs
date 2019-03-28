@@ -18,11 +18,9 @@ namespace Peracto.Svg.Render.Dx.Utility
         case LineCap.Butt:
           return D2D1.CapStyle.Flat;
         case LineCap.Round:
-          return D2D1.CapStyle.Flat;
-  //        return D2D1.CapStyle.Round;
+          return D2D1.CapStyle.Round;
         case LineCap.Square:
-          return D2D1.CapStyle.Flat;
-//          return D2D1.CapStyle.Square;
+          return D2D1.CapStyle.Square;
         default:
           throw new ArgumentOutOfRangeException(nameof(lineCap), lineCap, null);
       }

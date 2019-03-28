@@ -19,7 +19,7 @@ namespace Peracto.Svg.Render.Dx.Elements
       {
         fragment.SetParentOverride(element);
 
-        using (LayerHelper.Create(render.Target, element, context, true))
+        using (LayerHelper.Create(render.Target, render.FontManager, element, context, true))
           await render.GetRenderer(fragment.ElementType)(
             fragment,
             context.Create(element.GetSize(context, context.Size)),

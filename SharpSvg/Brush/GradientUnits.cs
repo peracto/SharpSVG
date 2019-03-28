@@ -5,4 +5,11 @@
     UserSpaceOnUse,
     ObjectBoundingBox
   }
+
+  public enum ClipPathUnits
+  {
+    UserSpaceOnUse,
+    ObjectBoundingBox
+  }
+
 }

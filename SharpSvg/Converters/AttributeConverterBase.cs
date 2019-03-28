@@ -12,12 +12,12 @@ namespace Peracto.Svg.Converters
 
     public string AttributeName { get; }
 
-    IElementAttribute IElementAttributeFactory.Create(string attributeValue, IElement elementFactory)
+    IElementAttribute IElementAttributeFactory.Create(string attributeValue)
     {
-      return TryCreate(attributeValue, elementFactory, out var value)
+      return TryCreate(attributeValue, out var value)
         ? new ElementAttribute(AttributeName, value)
         : null;
     }
-    protected abstract bool TryCreate(string attributeValue, IElement elementFactory, out TBase value);
+    protected abstract bool TryCreate(string attributeValue, out TBase value);
   }
 }

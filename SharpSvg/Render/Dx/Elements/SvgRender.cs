@@ -31,6 +31,8 @@ namespace Peracto.Svg.Render.Dx.Elements
           element.GetPreserveAspectRatio().CalcMatrix(context.Size, viewSize);
         ;
 
+        Console.WriteLine($"SVG Box:{context.Size.Width}:{context.Size.Height} ... Clip:{offset.X},{offset.Y},{viewSize.Width},{viewSize.Height} matrix:sx{matrix.M11},sy{matrix.M22},x:{matrix.M31},y:{matrix.M32}");
+
       return Disposable.CreateAggregateDispose(
         LayerHelper.CreateClip(
           render.Target,

@@ -48,6 +48,17 @@ namespace Peracto.Svg.Types
       return new PxColor(rgb,255);
     }
 
+    public static PxColor FromRgb(int r, int g, int b)
+    {
+      return new PxColor(
+        r / 255.0f,
+        g / 255.0f,
+        b / 255.0f,
+        1
+      );
+    }
+
+
     public PxColor AddOpacity(float opacity)
     {
       return new PxColor(R, G, B, A * opacity);

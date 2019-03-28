@@ -6,7 +6,7 @@
         {
         }
 
-        protected override bool TryCreate(string attributeValue, IElement elementFactory, out string rc)
+        protected override bool TryCreate(string attributeValue,out string rc)
         {
             rc = attributeValue.Trim();
             return rc.Length > 0;

@@ -8,7 +8,7 @@ namespace Peracto.Svg.Converters
     {
     }
 
-    protected override bool TryCreate(string value, IElement elementFactory, out object x)
+    protected override bool TryCreate(string value, out object x)
     {
       //var rc = new ExCSS.StylesheetParser().Parse("#a{" + value + "}");
       var cssParser = new ExCSS.Parser();

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="ExCSS" Version="2.0.6" />
+    <PackageReference Include="Fizzler" Version="1.2.0" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct2D1" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D11" Version="4.2.0" />

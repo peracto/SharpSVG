@@ -14,7 +14,7 @@ namespace Peracto.Svg.Converters
         {
         }
 
-        protected override bool TryCreate(string attributeValue, IElement elementFactory, out ITransform rc)
+        protected override bool TryCreate(string attributeValue, out ITransform rc)
         {
             var transforms = SplitTransforms(attributeValue)
                 .Select(f => ParseFunction(f.Key, f.Value))
@@ -61,12 +61,12 @@ namespace Peracto.Svg.Converters
                         return new ShearTransform(points[0], points[1]);
                     else
                         throw new FormatException("Shear transforms must be in the format 'shear(x [,y])'");
-                case "skewX":
+                case "skewx":
                     if (points.Count == 1)
                         return new SkewTransform(points[0], 0);
                     else
                         throw new FormatException("SkewX transforms must be in the format 'skewX(x)'");
-                case "skewY":
+                case "skewy":
                     if (points.Count == 1)
                         return new SkewTransform(0, points[0]);
                     else

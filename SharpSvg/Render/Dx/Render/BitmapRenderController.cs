@@ -22,8 +22,10 @@ namespace Peracto.Svg.Render.Dx.Render
       var svg = document.Children.FirstOrDefault(e => e.ElementType == "svg");
       if (svg == null) throw new Exception("No svg element");
 
-      var state = FrameContext.CreateRoot(0, 0);
-      var size = svg.GetSize(state, new PxSize(749, 1123));
+
+      var xx = svg.TryGetViewBox(out var vb) ? vb.Size : new PxSize(1024, 1024);
+      var state = FrameContext.CreateRoot(xx.Width,xx.Height);
+      var size = svg.GetSize(state, xx);
 
       using (var renderer = Create(size, out var bm))
       {
@@ -38,16 +40,24 @@ namespace Peracto.Svg.Render.Dx.Render
       }
     }
 
+    private WIC.Bitmap _bitmap;
+
+    public override void Dispose()
+    {
+      base.Dispose();
+      _bitmap?.Dispose();
+    }
+
     private RendererDirect2D Create(PxSize size, out WIC.Bitmap wicBitmap)
     {
-      wicBitmap = new WIC.Bitmap(
+      _bitmap = wicBitmap = new WIC.Bitmap(
         WicFactory,
         (int)size.Width,
         (int)size.Height,
         WIC.PixelFormat.Format32bppPBGRA,
         WIC.BitmapCreateCacheOption.CacheOnLoad
       );
-      //wicBitmap.SetResolution(600, 600);
+      wicBitmap.SetResolution(600, 600);
 
       var renderProps = new D2D1.RenderTargetProperties(
         D2D1.RenderTargetType.Default,
@@ -55,8 +65,8 @@ namespace Peracto.Svg.Render.Dx.Render
           DXGI.Format.B8G8R8A8_UNorm,
           D2D1.AlphaMode.Premultiplied
         ),
-        0,
-        0,
+        600,
+        600,
         D2D1.RenderTargetUsage.None, //GdiCompatible| D2D1.RenderTargetUsage.ForceBitmapRemoting,
         D2D1.FeatureLevel.Level_DEFAULT
       );
@@ -73,11 +83,14 @@ namespace Peracto.Svg.Render.Dx.Render
     }
     public void Save(WIC.Bitmap wicBitmap,Stream stream)
     {
-      using (var encoder = new WIC.BitmapEncoder(WicFactory, WIC.ContainerFormatGuids.Png, stream))
+      using (var encoder = new WIC.BitmapEncoder(WicFactory, WIC.ContainerFormatGuids.Jpeg, stream))
       using (var frame = new WIC.BitmapFrameEncode(encoder))
       {
         frame.Initialize();
-        var pfx = WIC.PixelFormat.FormatDontCare;
+        var pfx = WIC.PixelFormat.Format128bppRGBAFloat; //Format64bppRGBA; //FormatDontCare;
+
+        
+        frame.SetResolution(600,600);
         frame.SetPixelFormat(ref pfx);
         frame.WriteSource(wicBitmap);
         frame.Commit();

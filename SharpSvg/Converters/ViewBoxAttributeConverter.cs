@@ -8,7 +8,7 @@ namespace Peracto.Svg.Converters
     {
     }
 
-    protected override bool TryCreate(string attributeValue, IElement elementFactory, out ViewBox rc)
+    protected override bool TryCreate(string attributeValue, out ViewBox rc)
     {
       rc = ViewBox.Parse(attributeValue);
       return rc != null;

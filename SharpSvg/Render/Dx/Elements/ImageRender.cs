@@ -4,6 +4,7 @@ using Peracto.Svg.Render.Dx.Utility;
 using Peracto.Svg.Types;
 using System;
 using System.Threading.Tasks;
+using Peracto.Svg.Image;
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;
 using DXM = SharpDX.Mathematics.Interop;
@@ -35,21 +36,31 @@ namespace Peracto.Svg.Render.Dx.Elements
 
     private static void RenderBitmap(IElement element, IFrameContext context, RendererDirect2D render, D2D1.Bitmap bitmap)
     {
-      using (LayerHelper.Create(render.Target, element, context, true))
+      using (LayerHelper.Create(render.Target, render.FontManager, element, context, true))
       {
-        using (new TransformHelper(
-            render.Target,
-            element
-              .GetPreserveAspectRatio()
-              .CalcMatrix(element.GetSize(context,context.Size), bitmap.Size.FromDx().AsRectangle())
-          ))
+        var ratio = element.GetPreserveAspectRatio();
+        var size = element.GetSize(context, context.Size);
+        switch (ratio.Align)
         {
-          render.Target.DrawBitmap(
-            bitmap,
-            new DXM.RawRectangleF(0,0,bitmap.Size.Width,bitmap.Size.Height), 
-            element.GetOpacity(),
-            D2D1.BitmapInterpolationMode.NearestNeighbor
-          );
+          case PreserveAspectRatioType.None:
+            render.Target.DrawBitmap(
+              bitmap,
+              new DXM.RawRectangleF(0, 0, size.Width, size.Height),
+              element.GetOpacity(),
+              D2D1.BitmapInterpolationMode.NearestNeighbor
+            );
+            break;
+          default:
+            using (new TransformHelper(render.Target, ratio.CalcMatrix(size, bitmap.Size.FromDx().AsRectangle())))
+            {
+              render.Target.DrawBitmap(
+                bitmap,
+                new DXM.RawRectangleF(0, 0, bitmap.Size.Width, bitmap.Size.Height),
+                element.GetOpacity(),
+                D2D1.BitmapInterpolationMode.NearestNeighbor
+              );
+            }
+            break;
         }
       }
     }
@@ -59,7 +70,7 @@ namespace Peracto.Svg.Render.Dx.Elements
       var fragment = doc?.RootElement;
       if (fragment == null) return;
 
-      using (LayerHelper.Create(render.Target, element, context, true))
+      using (LayerHelper.Create(render.Target, render.FontManager, element, context, true))
       {
         var imageSize = element.GetSize(context, context.Size);
         var imageState = context.Create(imageSize);

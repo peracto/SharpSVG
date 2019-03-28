@@ -27,7 +27,7 @@ namespace Peracto.Svg.Render.Dx.Render
     private readonly RenderControllerBase _renderBase;
 
     public D2D1.RenderTarget Target => _dc;
-
+    public FontManager FontManager => _fontManager;
     public RendererDirect2D(
       RenderControllerBase renderBase,
       D2D1.RenderTarget dc
@@ -96,6 +96,9 @@ namespace Peracto.Svg.Render.Dx.Render
       Stroke strokeStyle
     )
     {
+      if (MathEx.IsZero(radius)) return;
+
+
       var ellipse = new D2D1.Ellipse(
         new DXM.RawVector2(pt.X, pt.Y),
         radius,
@@ -118,6 +121,9 @@ namespace Peracto.Svg.Render.Dx.Render
       Stroke strokeStyle
     )
     {
+
+      if (MathEx.IsZero(radius.X)  || MathEx.IsZero(radius.Y)) return;
+
       var ellipse = new D2D1.Ellipse(
         new DXM.RawVector2(pt.X, pt.Y),
         radius.X,
@@ -142,6 +148,10 @@ namespace Peracto.Svg.Render.Dx.Render
       if (strokeStyle.Width <= 0) return;
       var strokeBrush = CreateBrush(element, context, strokeStyle.Brush, strokeStyle.Opacity);
       if (strokeBrush == null) return;
+
+      var dx = Math.Abs(point1.X - point2.X);
+      var dy = Math.Abs(point1.Y - point2.Y);
+      if (MathEx.IsZero((float)Math.Sqrt((dx * dx) + (dy * dy)))) return;
 
       Target.DrawLine(
         point1.ToDx(),
@@ -267,6 +277,9 @@ namespace Peracto.Svg.Render.Dx.Render
       Stroke strokeStyle
     )
     {
+
+      if (MathEx.IsZero(bounds.Width) || MathEx.IsZero(bounds.Height)) return;
+
       var fillBrush = CreateBrush(element, context, fill.Brush, fill.Opacity);
       var strokeBrush = strokeStyle.Width > 0 ? CreateBrush(element, context, strokeStyle.Brush, strokeStyle.Opacity) : null;
       var rect = bounds.ToDx();
@@ -276,8 +289,8 @@ namespace Peracto.Svg.Render.Dx.Render
         var roundedRect = new D2D1.RoundedRectangle()
         {
           Rect = rect,
-          RadiusX = radius.X,
-          RadiusY = radius.Y
+          RadiusX = MathEx.IsZero(radius.X)?radius.Y: radius.X,
+          RadiusY = MathEx.IsZero(radius.Y)?radius.X: radius.Y
         };
         if (fillBrush != null) Target.FillRoundedRectangle(roundedRect, fillBrush);
         if (strokeBrush != null)

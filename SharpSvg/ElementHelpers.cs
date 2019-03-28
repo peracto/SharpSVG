@@ -126,6 +126,12 @@ namespace Peracto.Svg
       }
     }
 
+
+    public static ClipPathUnits GetClipPathUnits(this IElement element)
+    {
+      return AA.ClipPathUnits.GetValue(element);
+    }
+
     public static float GetFontSize(this IElement element, IFrameContext context)
     {
       return ComputeFontSize(element, context, AA.FontSize.GetValue(element));
@@ -275,7 +281,7 @@ namespace Peracto.Svg
         AA.StrokeLineJoin.GetValue(element),
         AA.StrokeMiterLimit.GetValue(element),
         AA.StrokeDashOffset.GetValue(element).Resolve(0),
-        AA.StrokeDashArray.GetValue(element)
+        AA.StrokeDashArray.GetValue(element)?.Select(context.ToDeviceValue).ToArray()
       );
     }
 

@@ -12,7 +12,7 @@ namespace Peracto.Svg.Converters
             _splitRegexString = splitRegexString;
         }
 
-        protected override bool TryCreate(string value, IElement elementFactory,out string[]  rc)
+        protected override bool TryCreate(string value, out string[]  rc)
         {
             rc = (from a in Regex.Split(value.Trim(), _splitRegexString)
                 where !string.IsNullOrEmpty(a)

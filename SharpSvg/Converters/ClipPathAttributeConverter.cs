@@ -9,7 +9,7 @@ namespace Peracto.Svg.Converters
     {
     }
 
-    protected override bool TryCreate(string value, IElement elementFactory, out IClipPathFactory rc)
+    protected override bool TryCreate(string value, out IClipPathFactory rc)
     {
       rc = Create(value.Trim());
       return rc != null;

@@ -22,7 +22,7 @@ namespace Peracto.Svg.Converters
     {
     }
 
-    protected override bool TryCreate(string attributeValue, IElement elementFactory, out T rc)
+    protected override bool TryCreate(string attributeValue, out T rc)
     {
       return Dict.TryGetValue(attributeValue.ToLower(), out rc);
     }
