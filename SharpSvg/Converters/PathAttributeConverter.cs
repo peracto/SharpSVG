@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Peracto.Svg.Paths;
 using Peracto.Svg.Types;
 using Peracto.Svg.Utility;
+using SharpDX.DirectWrite;
 
 namespace Peracto.Svg.Converters
 {
@@ -53,8 +55,15 @@ namespace Peracto.Svg.Converters
         case 'z': // relative closepath
           return new ClosePathCommand(cursor, start, true);
         case 'a':
-          return new ArcPathCommand(cursor, args[0], args[1], args[2], Math.Abs(args[3]) > float.Epsilon,
-            Math.Abs(args[4]) > float.Epsilon, args.ToPoint(5,cursor));
+          return new ArcPathCommand(
+            cursor, 
+            args[0], 
+            args[1], 
+            args[2], 
+            Math.Abs(args[3]) > float.Epsilon,
+            Math.Abs(args[4]) > float.Epsilon, 
+            args.ToPoint(5,cursor)
+            );
         case 'A':
           return new ArcPathCommand(cursor, args[0], args[1], args[2], Math.Abs(args[3]) > float.Epsilon,
             Math.Abs(args[4]) > float.Epsilon, args.ToPoint(5));
@@ -76,7 +85,20 @@ namespace Peracto.Svg.Converters
       return true;
     }
 
-    protected IEnumerable<PathSegment> GetPathSegments(string attributeValue)
+    public static bool TryParse(string value, out Path path)
+    {
+      var bounds = new XYRect();
+      var segments = new List<PathSegment>();
+      foreach (var ps in GetPathSegments(value))
+      {
+        segments.Add(ps);
+        bounds = bounds.Add(ps.Bounds);
+      }
+      path = new Path(segments.ToArray(), bounds);
+      return true;
+    }
+
+    protected static IEnumerable<PathSegment> GetPathSegments(string attributeValue)
     {
       IList<IPathCommand> stack = null;
       var bounds = new XYRect();
@@ -133,117 +155,70 @@ namespace Peracto.Svg.Converters
       }
     }
 
-
+    
     private static IEnumerable<KeyValuePair<char, IList<float>>> GetCommands(string text)
     {
-      foreach (var a in GetSuperCommands(text))
+      var parser = new PathParser(text);
+
+      float x1 = 0;
+      float y1 = 0;
+      float x2 = 0;
+      float y2 = 0;
+      float x3 = 0;
+      float y3 = 0;
+
+      var action = '\0';
+
+      while (!parser.Eof)
       {
-        var k = a;
-        if ((k.Key == 'M' || k.Key == 'm') && k.Value.Count > 2)
+        if (parser.TryGetCommand(out var cmd))
+          action = cmd;
+
+        switch (char.ToUpper(action))
         {
-          yield return new KeyValuePair<char, IList<float>>(a.Key,a.Value.Take(2).ToList());
-          k = new KeyValuePair<char, IList<float>>(a.Key=='M'?'L':'l', a.Value.Skip(2).ToList());
-        }
-
-        if((a.Key=='L' || a.Key == 'l') && k.Value.Count > 2)
-        {
-          var list = a.Value;
-          while (list.Count >= 2)
-          {
-            yield return new KeyValuePair<char, IList<float>>(k.Key,list.Take(2).ToList());
-            list = list.Skip(2).ToList();
-          }
-        }
-        else
-        {
-          yield return a;
-        }
-      }
-    }
-
-
-    private static IEnumerable<KeyValuePair<char, IList<float>>> GetSuperCommands(string text)
-    {
-      var command = '\0';
-      IList<float> args = null;
-
-      foreach (var t in GetTokens(text))
-      {
-        switch (t.TokenType)
-        {
-          case TokenType.String:
-          {
-            if (command != '\0')
-            {
-              yield return new KeyValuePair<char, IList<float>>(command, args);
-            }
-
-            command = t.Value[0];
-            args = null;
+          case 'Z':
+            yield return new KeyValuePair<char, IList<float>>(action, null);
             break;
-          }
-          case TokenType.Number:
-          {
-            if (args == null) args = new List<float>();
-            args.Add(float.Parse(t.Value));
+          case 'M':
+            if (parser.TryGetValue(out x1, out y1))
+              yield return new KeyValuePair<char, IList<float>>(action, new List<float>() {x1, y1});
+            action = action == 'M' ? 'L' : 'l';
             break;
-          }
+          case 'L':
+            if (parser.TryGetValue(out x1, out y1))
+              yield return new KeyValuePair<char, IList<float>>(action, new List<float>() {x1, y1});
+            break;
+          case 'T':
+            if (parser.TryGetValue(out x1, out y1))
+              yield return new KeyValuePair<char, IList<float>>(action, new List<float>() {x1, y1});
+            break;
+          case 'H':
+          case 'V':
+            if (parser.TryGetValue(out x1))
+              yield return new KeyValuePair<char, IList<float>>(action, new List<float>() {x1});
+            break;
+          case 'C':
+            if (parser.TryGetValue(out x1, out y1, out x2, out y2, out x3, out y3))
+              yield return new KeyValuePair<char, IList<float>>(action, new List<float>() {x1, y1, x2, y2, x3, y3});
+            break;
+          case 'S':
+          case 'Q':
+            if (parser.TryGetValue(out x1, out y1, out x2, out y2))
+              yield return new KeyValuePair<char, IList<float>>(action, new List<float>() {x1, y1, x2, y2});
+            break;
+          case 'A':
+            if (parser.TryGetArcValue(out x1, out x2, out x3, out var flag1, out var flag2, out y1, out y2))
+              yield return new KeyValuePair<char, IList<float>>(action,
+                new List<float>() {x1, x2, x3, flag1, flag2, y1, y2});
+            break;
           default:
-            throw new ArgumentOutOfRangeException();
+            parser.TryGetValue(out x1);
+            break;
         }
-      }
-
-      yield return new KeyValuePair<char, IList<float>>(command, args);
-    }
-
-    private static IEnumerable<Token> GetTokens(string text)
-    {
-      var rdr = new SimpleStringReader(text);
-
-      rdr.SkipWhiteSpace();
-
-      while (!rdr.Eof)
-      {
-        var ch = rdr.Peek();
-        if (ch == '-' || ch == '+' || char.IsDigit(ch))
-        {
-          var p = rdr.Position;
-          rdr.Consume();
-          while (char.IsDigit(rdr.Peek())) rdr.Consume();
-          if (rdr.Peek() == '.')
-          {
-            rdr.Consume();
-            while (char.IsDigit(rdr.Peek())) rdr.Consume();
-          }
-
-          ch = rdr.Peek();
-          if (ch == 'e' || ch == 'E')
-          {
-            rdr.Consume();
-            ch = rdr.Peek();
-            if (ch == '-' || ch == '+')
-              rdr.Consume();
-            while (char.IsDigit(rdr.Peek())) rdr.Consume();
-          }
-
-
-
-
-          yield return new Token(TokenType.Number, rdr.GetString(p));
-        }
-        else if (char.IsLetter(ch))
-        {
-          var p = rdr.Position;
-          rdr.Consume();
-          yield return new Token(TokenType.String, rdr.GetString(p));
-        }
-        else
-          rdr.Consume();
-
-        rdr.SkipWhiteSpace();
       }
     }
 
+    
     private enum TokenType
     {
       String,
@@ -306,8 +281,206 @@ namespace Peracto.Svg.Converters
         return new PxRectangle(r._x1,r._y1,r._x2-r._x1,r._y2-r._y1);
       }
     }
+
+
+    private class PathParser
+    {
+      private readonly IEnumerator<Token> _t;
+
+      public PathParser(string text)
+      {
+        _t = GetTokens(text).GetEnumerator();
+        Eof = !_t.MoveNext();
+      }
+
+      public bool Eof { get; private set; }
+
+      public bool TryGetCommand(out char cmd)
+      {
+        if (_t.Current.TokenType != TokenType.String)
+        {
+          cmd = '\0';
+          return false;
+        }
+
+        cmd = _t.Current.Value[0];
+        Eof = !_t.MoveNext();
+        return true;
+      }
+
+      public bool TryGetValue(out float x)
+      {
+        if (TryGetValueRaw(out var v))
+        {
+          x = float.Parse(v);
+          return true;
+        }
+        x = 0;
+        return false;
+      }
+
+      private bool TryGetValueRaw(out string x)
+      {
+        if (_t.Current.TokenType == TokenType.Number)
+        {
+          x = _t.Current.Value;
+          Eof = !_t.MoveNext();
+          return true;
+        }
+        x = "";
+        return false;
+      }
+
+      public bool TryGetValue(out float v1, out float v2)
+      {
+        if (TryGetValue(out v1) && TryGetValue(out v2))
+          return true;
+        v1 = 0;
+        v2 = 0;
+        return false;
+      }
+
+      private bool TryGetValue(out float v1, out float v2, out float v3)
+      {
+        if (TryGetValue(out v1) && TryGetValue(out v2) && TryGetValue(out v3))
+          return true;
+        v1 = 0;
+        v2 = 0;
+        v3 = 0;
+        return false;
+      }
+
+      public bool TryGetValue(out float v1, out float v2, out float v3, out float v4)
+      {
+        if (TryGetValue(out v1) && TryGetValue(out v2) && TryGetValue(out v3) && TryGetValue(out v4))
+          return true;
+        v1 = 0;
+        v2 = 0;
+        v3 = 0;
+        v4 = 0;
+        return false;
+      }
+
+      public bool TryGetValue(out float v1, out float v2, out float v3, out float v4, out float v5, out float v6)
+      {
+        if (TryGetValue(out v1) && TryGetValue(out v2) && TryGetValue(out v3) && TryGetValue(out v4) && TryGetValue(out v5) && TryGetValue(out v6))
+          return true;
+        v1 = 0;
+        v2 = 0;
+        v3 = 0;
+        v4 = 0;
+        v5 = 0;
+        v6 = 0;
+        return false;
+      }
+
+      public bool TryGetArcValue(out float x1, out float x2, out float x3,
+        out float flag1, out float flag2, out float y1, out float y2)
+      {
+        if (
+          TryGetValue(out x1,out x2, out x3) &&
+          TryCoordinateFlagSet(out flag1, out flag2, out y1) &&
+          TryGetValue(out y2)
+        ) return true;
+        x1 = x2 = x3 = flag1 = flag2 = y1 = y2 = 0;
+        return false;
+      }
+
+      private bool TryCoordinateFlagSet(out float flag1, out float flag2, out float value1)
+      {
+        flag1 = 0;
+        flag2 = 0;
+        value1 = 0;
+
+
+        try
+        {
+
+          if (!TryGetValueRaw(out var v4)) return false;
+          if (v4.StartsWith("-") || v4.StartsWith("+")) return false;
+          if (v4.Length == 1)
+          {
+            flag1 = float.Parse(v4);
+            if (!TryGetValueRaw(out v4)) return false;
+            if (v4.StartsWith("-") || v4.StartsWith("+")) return false;
+            if (v4.Length == 1)
+            {
+              flag2 = float.Parse(v4);
+              v4 = "";
+            }
+            else
+            {
+              flag2 = float.Parse(v4.Substring(0, 1));
+              v4 = v4.Substring(1);
+            }
+          }
+          else
+          {
+            flag1 = float.Parse(v4.Substring(0, 1));
+            flag2 = float.Parse(v4.Substring(1, 1));
+            v4 = v4.Substring(2);
+          }
+
+          if (v4.Length > 0)
+            value1 = float.Parse(v4);
+          else if (!TryGetValue(out value1)) return false;
+          return true;
+        }
+        catch (Exception ex)
+        {
+          throw ex;
+        }
+      }
+
+      private static IEnumerable<Token> GetTokens(string text)
+      {
+        var rdr = new SimpleStringReader(text);
+
+        rdr.SkipWhiteSpace();
+
+        while (!rdr.Eof)
+        {
+          var ch = rdr.Peek();
+          if (ch == '-' || ch == '+' || ch=='.' || char.IsDigit(ch))
+          {
+            var p = rdr.Position;
+            rdr.Consume();
+            while (char.IsDigit(rdr.Peek())) rdr.Consume();
+            if (rdr.Peek() == '.')
+            {
+              rdr.Consume();
+              while (char.IsDigit(rdr.Peek())) rdr.Consume();
+            }
+
+            ch = rdr.Peek();
+            if (ch == 'e' || ch == 'E')
+            {
+              rdr.Consume();
+              ch = rdr.Peek();
+              if (ch == '-' || ch == '+')
+                rdr.Consume();
+              while (char.IsDigit(rdr.Peek())) rdr.Consume();
+            }
+
+            yield return new Token(TokenType.Number, rdr.GetString(p));
+          }
+          else if (ch == ',')
+          {
+            rdr.Consume();
+          }
+          else /*if (char.IsLetter(ch))*/
+          {
+            var p = rdr.Position;
+            rdr.Consume();
+            yield return new Token(TokenType.String, rdr.GetString(p));
+          }
+          /*else
+            rdr.Consume();*/
+
+          rdr.SkipWhiteSpace();
+        }
+      }
+
+    }
   }
-
-
-
 }

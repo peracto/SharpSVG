@@ -19,5 +19,5 @@ namespace Peracto.Svg.Converters
                 select a).ToArray();
             return rc.Length > 0;
         }
-    }
+  }
 }

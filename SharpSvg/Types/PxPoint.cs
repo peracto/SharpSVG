@@ -30,6 +30,7 @@ namespace Peracto.Svg.Types
         mirror.X + (mirror.X >= X? dx:-dx),
         mirror.Y + (mirror.Y >= Y? dy:-dy)
       );
+
     }
   }
 }

@@ -11,7 +11,7 @@ namespace Peracto.Svg.Utility
     }
     public static PxPoint ToPoint(this IList<float> list, int index, PxPoint cursor)
     {
-      return new PxPoint(list[index], list[index + 1]).Add(cursor);
+      return new PxPoint(list[index]+cursor.X, list[index + 1]+cursor.Y);
     }
   }
 }

@@ -40,7 +40,7 @@ namespace Peracto.Svg
         case MeasureUnit.Millimeter:
           return ((unit.Value / 10) / 2.54f) * Dpi;
         case MeasureUnit.Pica:
-          return ((unit.Value * 12) / 72);
+          return ((unit.Value * 12) / 72) * Dpi;
         case MeasureUnit.Point:
           return (unit.Value / 72) * Dpi;
         case MeasureUnit.Pixel:

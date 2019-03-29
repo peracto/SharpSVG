@@ -46,7 +46,6 @@ namespace Peracto.Svg.Converters
         return true;
       }
 
-
       var match = MeasureRegex.Match(value);
 
     //  Console.WriteLine($"Matching {value} to Measure {match.Success}");

@@ -44,7 +44,7 @@ namespace Peracto.Svg.Parser
     public static readonly PercentageAttributeConverter StrokeOpacity = new PercentageAttributeConverter("stroke-opacity");
     public static readonly PercentageAttributeConverter StopOpacity = new PercentageAttributeConverter("stop-opacity");
     public static readonly MeasureListAttributeConverter StrokeDashArray = new MeasureListAttributeConverter("stroke-dasharray");
-    public static readonly PercentageAttributeConverter StrokeDashOffset = new PercentageAttributeConverter("stroke-dashoffset");
+    public static readonly MeasureAttributeConverter StrokeDashOffset = MeasureAttributeConverter.CreateH("stroke-dashoffset");
     public static readonly GenericEnumConverter<LineCap> StrokeLineCap = new GenericEnumConverter<LineCap>("stroke-linecap");
     public static readonly GenericEnumConverter<LineJoin> StrokeLineJoin = new GenericEnumConverter<LineJoin>("stroke-linejoin");
     public static readonly NumberAttributeConverter StrokeMiterLimit = new NumberAttributeConverter("stroke-miterlimit");

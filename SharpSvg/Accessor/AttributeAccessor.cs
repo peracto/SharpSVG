@@ -1,19 +1,13 @@
-﻿using System;
+﻿using Peracto.Svg.Types;
 
 namespace Peracto.Svg.Accessor
 {
   public class AttributeAccessor<T> : IAccessor<T>
   {
+
     private bool Inherit { get; }
     public string AttributeName { get; }
     public T DefaultValue { get; }
-
-    public AttributeAccessor(string name)
-    {
-      AttributeName = name;
-      DefaultValue = default(T);
-      Inherit = false;
-    }
 
     public AttributeAccessor(string name, T defaultValue, bool inherit = false)
     {
@@ -21,6 +15,7 @@ namespace Peracto.Svg.Accessor
       DefaultValue = defaultValue;
       Inherit = inherit;
     }
+
 
     public T GetValue(IElement element)
     {

@@ -16,12 +16,12 @@ namespace Peracto.Svg
 
   public static class ElementHelpers
   {
-    public static IEnumerable<IElement> Descendants(this IElement element,string elementName = null)
+    public static IEnumerable<IElement> Descendants(this IElement element, string elementType = null)
     {
       var stack = new Stack<IEnumerator<IElement>>();
       var current = element.Children.GetEnumerator();
 
-      yield return element;
+      if (elementType == null || element.ElementType == elementType) yield return element;
 
       while (true)
       {
@@ -29,13 +29,14 @@ namespace Peracto.Svg
         {
           var e = current.Current;
           if (e == null) continue;
-          if (elementName == null || e.ElementType == elementName)
+          if (elementType == null || e.ElementType == elementType)
             yield return e;
           var c = e.Children;
           if (c.Count == 0) continue;
           stack.Push(current);
           current = c.GetEnumerator();
         }
+
         if (stack.Count == 0) break;
         current = stack.Pop();
       }
@@ -280,7 +281,7 @@ namespace Peracto.Svg
         AA.StrokeLineCap.GetValue(element),
         AA.StrokeLineJoin.GetValue(element),
         AA.StrokeMiterLimit.GetValue(element),
-        AA.StrokeDashOffset.GetValue(element).Resolve(0),
+        AA.StrokeDashOffset.GetValue(element).Resolve(element,context),
         AA.StrokeDashArray.GetValue(element)?.Select(context.ToDeviceValue).ToArray()
       );
     }

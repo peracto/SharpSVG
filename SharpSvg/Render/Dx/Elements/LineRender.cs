@@ -1,11 +1,12 @@
-﻿using Peracto.Svg.Render.Dx.Render;
+﻿using System.Threading.Tasks;
+using Peracto.Svg.Render.Dx.Render;
 using Peracto.Svg.Render.Dx.Utility;
 
 namespace Peracto.Svg.Render.Dx.Elements
 {
   public static class LineRender 
   {
-    public static async System.Threading.Tasks.Task Render(IElement element, IFrameContext context, RendererDirect2D render)
+    public static Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
       using (LayerHelper.Create(render.Target, render.FontManager, element, context, false))
       {
@@ -17,6 +18,8 @@ namespace Peracto.Svg.Render.Dx.Elements
           element.GetStroke(context)
         );
       }
+      return Task.CompletedTask;
+
     }
   }
 }

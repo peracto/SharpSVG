@@ -18,7 +18,7 @@ namespace Peracto.Svg.Paths
     }
 
     public PxPoint NextPoint => Point3;
-    public PxPoint ShortPoint => Point1.Reflect(Point0);
+    public PxPoint ShortPoint => Point2.Reflect(Point3);
 
     void IPathCommand.Visit<T>(T state, IPathVisitor<T> visitor)
     {

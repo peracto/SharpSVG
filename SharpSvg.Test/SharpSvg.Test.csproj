@@ -3,6 +3,10 @@
     <TargetFramework>net472</TargetFramework>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <RootNamespace>Peracto.Svg.Test</RootNamespace>
+    <ApplicationIcon />
+    <OutputType>Exe</OutputType>
+    <StartupObject />
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

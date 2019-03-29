@@ -8,6 +8,7 @@ using Peracto.Svg.Render.Dx.Utility;
 using Peracto.Svg.Types;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using D2D1 = SharpDX.Direct2D1;
@@ -170,7 +171,8 @@ namespace Peracto.Svg.Render.Dx.Render
       Stroke strokeStyle
     )
     {
-      if (path == null) return;
+      if (path == null || path.Segments.Length==0) return;
+
 
       var fillBrush = CreateBrush(element, context, fill.Brush, fill.Opacity);
       var strokeBrush = strokeStyle.Width > 0 ? CreateBrush(element, context, strokeStyle.Brush, strokeStyle.Opacity) : null;
@@ -256,16 +258,19 @@ namespace Peracto.Svg.Render.Dx.Render
       {
         StartCap = strokeStyle.LineCap.ToDx(),
         EndCap = strokeStyle.LineCap.ToDx(),
-        DashCap = D2D1.CapStyle.Flat,//Round,
+        DashCap = strokeStyle.LineCap.ToDx(),
         LineJoin = strokeStyle.LineJoin.ToDx(),
-        MiterLimit = strokeStyle.MiterLimit,
+        MiterLimit = strokeStyle.MiterLimit/strokeStyle.Width,
         DashStyle = strokeStyle.DashArray != null && strokeStyle.DashArray.Length > 0 ? D2D1.DashStyle.Custom : D2D1.DashStyle.Solid,
-        DashOffset = strokeStyle.DashOffset
+        DashOffset = strokeStyle.DashOffset/strokeStyle.Width
       };
 
-      return style.DashStyle == D2D1.DashStyle.Solid
+      /*if(style.DashStyle==D2D1.DashStyle.Custom)
+        Debugger.Break();*/
+
+      return style.DashStyle != D2D1.DashStyle.Custom
        ? new D2D1.StrokeStyle(_dc.Factory, style)
-       : new D2D1.StrokeStyle(_dc.Factory, style, strokeStyle.DashArray);
+       : new D2D1.StrokeStyle(_dc.Factory, style, strokeStyle.DashArray.Select(e=>e/strokeStyle.Width).ToArray());
     }
 
     public void DrawRectangle(

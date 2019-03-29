@@ -12,7 +12,7 @@ namespace SharpSvg.Test
     public static async Task Main()
     {
       var fullPath = Path.GetDirectoryName(typeof(MainX).Assembly.Location);
-      var path = Path.GetFullPath(Path.Combine(fullPath, "..", "..", "W3CTestSuite"));
+      var path = Path.GetFullPath(Path.Combine(fullPath, "..", "..", "..", "W3CTestSuite"));
       //get the folder that's in
       await Tests.Process(path, @"d:\temp\bingo9.pdf");
     }

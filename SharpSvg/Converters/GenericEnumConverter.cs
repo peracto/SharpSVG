@@ -6,7 +6,7 @@ using Peracto.Svg.Utility;
 
 namespace Peracto.Svg.Converters
 {
-  public class GenericEnumConverter<T> : AttributeConverterBase<T> where T : struct, IComparable
+  public class GenericEnumConverter<T> : AttributeConverterBase<T> where T : struct
   {
     private static IDictionary<string, T> Dict { get; }
 
@@ -26,5 +26,11 @@ namespace Peracto.Svg.Converters
     {
       return Dict.TryGetValue(attributeValue.ToLower(), out rc);
     }
+
+    public static bool TryParse(string attributeValue, out T rc)
+    {
+      return Dict.TryGetValue(attributeValue.ToLower(), out rc);
+    }
+
   }
 }

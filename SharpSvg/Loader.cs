@@ -2,11 +2,13 @@
 using Peracto.Svg.Parser;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
 using ExCSS;
+using Peracto.Svg.Css;
 
 namespace Peracto.Svg
 {
@@ -28,14 +30,14 @@ namespace Peracto.Svg
       AttributeFactory = new AttributeFactory();
     }
 
-    private IEnumerable<KeyValuePair<string, string>> GetAttributes(XmlReader reader)
+    private IEnumerable<IElementAttribute> GetAttributes(XmlReader reader)
     {
       if (!reader.HasAttributes) yield break;
       while (reader.MoveToNextAttribute())
       {
         var newName = TransformName(reader.NamespaceURI, reader.LocalName);
         if (newName == null) continue;
-        yield return new KeyValuePair<string, string>(newName, reader.HasValue ? reader.Value : null);
+        yield return new ElementAttribute(newName, reader.HasValue ? reader.Value : string.Empty);
       }
     }
 
@@ -63,53 +65,114 @@ namespace Peracto.Svg
     {
       var settings = new XmlReaderSettings
       {
-        DtdProcessing = DtdProcessing.Ignore,
+        DtdProcessing = DtdProcessing.Parse,
         IgnoreComments = true,
-        IgnoreProcessingInstructions = true,
+  //      IgnoreProcessingInstructions = true,
         IgnoreWhitespace = true,
         Async = true
       };
 
       using (var reader = XmlReader.Create(stream, settings))
-        return await Parse(reader, baseUri);
+        return ApplyStyles(await Parse(reader, baseUri));
     }
 
-    private void ApplyStyles(IDocument document)
+
+    private class StyleHelper
     {
-      var styles = document.Descendants("style").ToList();
-      if (styles.Count == 0) return;
+      private IDictionary<string,(IElementAttribute attr,int specificity)> _styles = new Dictionary<string, (IElementAttribute Attr, int specificity)>();
 
-      var cssTotal = styles.Select((s) => s.Content).Aggregate((p, c) => p + Environment.NewLine + c);
-      var cssParser = new ExCSS.Parser();
-      var sheet = cssParser.Parse(cssTotal);
-      AggregateSelectorList aggList;
-      IEnumerable<BaseSelector> selectors;
-      IEnumerable<IElement> elemsToStyle;
-
-      foreach (var rule in sheet.StyleRules)
+      public void Add(IElementAttribute attr, int specificity)
       {
-        aggList = rule.Selector as AggregateSelectorList;
-        if (aggList != null && aggList.Delimiter == ",")
-        {
-          selectors = aggList;
-        }
-        else
-        {
-          selectors = Enumerable.Repeat(rule.Selector, 1);
-        }
+        if (!_styles.TryGetValue(attr.Name, out var rules))
+          _styles.Add(attr.Name, (attr, specificity));
+        else if (rules.specificity <= specificity)
+          _styles[attr.Name] = (attr, specificity);
+      }
 
-        foreach (var selector in selectors)
+      public IEnumerable<IElementAttribute> GetFinalStyles()
+      {
+        return _styles.Select(s => s.Value.attr);
+      }
+    }
+
+    private IEnumerable<(ExCSS.StyleRule Rule, ExCSS.BaseSelector Selector)> GetSelectors(ExCSS.Parser cssParser,IDocument document)
+    {
+      foreach (var style in document.RootElement.Descendants("style"))
+      {
+        var sheet = cssParser.Parse(style.Content);
+
+        foreach (var rule in sheet.StyleRules)
         {
-          elemsToStyle = document.QuerySelectorAll(rule.Selector.ToString(), elementFactory);
-          foreach (var elem in elemsToStyle)
+          if (rule.Selector is AggregateSelectorList list && list.Delimiter == ",")
           {
-            foreach (var decl in rule.Declarations)
-            {
-              elem.AddStyle(decl.Name, decl.Term.ToString(), rule.Selector.GetSpecificity());
-            }
+            foreach (var v in list)
+              yield return (Rule: rule, Selector: v);
+          }
+          else
+          {
+            yield return (Rule: rule, Selector: rule.Selector);
           }
         }
       }
+    }
+
+    private IEnumerable<IElementAttribute> GetStyles(ExCSS.Parser cssParser, string value)
+    {
+      var sheet = cssParser.Parse("#dummyxx{" + value + "}");
+      foreach (var rule in sheet.StyleRules)
+      foreach (var decl in rule.Declarations)
+        yield return new ElementAttribute(decl.Name, decl.Term.ToString());
+    }
+
+    private IDocument ApplyStyles(IDocument document)
+    {
+      var elementDict = new Dictionary<IElement, StyleHelper>();
+      var cssParser = new ExCSS.Parser();
+
+      foreach (var element in document.Descendants())
+      {
+        if(element.Attributes.Count==0) continue;
+        var sh = new StyleHelper();
+        elementDict.Add(element, sh);
+        foreach (var attribute in element.Attributes)
+        {
+          sh.Add(attribute,0);
+          if (attribute.Name != "style") continue;
+          foreach(var kvp in GetStyles(cssParser, attribute.Value as string))
+            sh.Add(kvp,1>>16);
+        }
+      }
+
+      foreach (var (rule, selector) in GetSelectors(cssParser, document))
+      {
+        foreach (var elem in document.QuerySelectorAll(selector.ToString()))
+        {
+          if (!elementDict.TryGetValue(elem, out var styleHelper))
+          {
+            styleHelper = new StyleHelper();
+            elementDict.Add(elem, styleHelper);
+          }
+
+          foreach (var decl in rule.Declarations)
+            styleHelper.Add(new ElementAttribute(decl.Name, decl.Term.ToString()), selector.GetSpecificity());
+        }
+      }
+
+      foreach (var elem in elementDict)
+      {
+        foreach (var kvp in elem.Value.GetFinalStyles())
+        {
+          var a = AttributeFactory.Create(elem.Key.ElementType, kvp.Name, (kvp.Value as string)?.Trim());
+          if(a==null)
+            Debugger.Break();
+        }
+        elem.Key.Attributes.Add(
+          from kvp in elem.Value.GetFinalStyles()
+          select AttributeFactory.Create(elem.Key.ElementType, kvp.Name, (kvp.Value as string)?.Trim())
+        );
+      }
+
+      return document;
     }
 
 
@@ -128,27 +191,7 @@ namespace Peracto.Svg
             var isEmptyElement = reader.IsEmptyElement;
             var elementType = reader.Name;
             var element = ElementFactory.Create(elementType);
-
-            var mappedAttributes = (
-              from attr in GetAttributes(reader)
-              let attribute = AttributeFactory.Create(elementType, attr.Key.Trim(), attr.Value.Trim())
-              where attribute != null
-              select attribute
-            );
-
-            element.Attributes.Add(mappedAttributes);
-
-            if (element.Attributes.TryGetValue<IList<KeyValuePair<string, string>>>("style", out var styles))
-            {
-              var mappedAttributes2 = (
-                from attr in styles
-                let attribute = AttributeFactory.Create(elementType, attr.Key.Trim(), attr.Value.Trim())
-                where attribute != null
-                select attribute
-              );
-              element.Attributes.Add(mappedAttributes2);
-            }
-
+            element.Attributes.Add(GetAttributes(reader));
             current.AddChild(element);
 
             if (!isEmptyElement)
@@ -181,18 +224,6 @@ namespace Peracto.Svg
         }
       }
 
-/*
-            var parser = new ExCSS.StylesheetParser();
-
-            foreach (var element in doc.Descendants("style"))
-            {
-                Console.WriteLine(element.Content);
-                var v = parser.Parse(element.Content);
-                foreach (var c in v.Children)
-                {
-                }
-            }
-*/
       return doc;
     }
   }

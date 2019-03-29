@@ -6,7 +6,7 @@ namespace Peracto.Svg
   public interface IElement
   {
     IElementDefinition Definition { get; }
-    IAttributeBag Attributes { get; }
+    IAttributeBag  Attributes { get; }
     void AddChild(IElement element);
     void RemoveChild(IElement element);
     IElement Parent { get; set; }

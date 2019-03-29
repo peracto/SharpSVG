@@ -15,7 +15,14 @@ namespace Peracto.Svg.Converters
       return rc != null;
     }
 
-    private IClipPathFactory Create(string original)
+    public static bool TryCreateX(string value, out IClipPathFactory rc)
+    {
+      rc = Create(value.Trim());
+      return rc != null;
+    }
+
+
+    private static IClipPathFactory Create(string original)
     {
       var value = original.ToLower();
       if (value.StartsWith("url(#"))
@@ -23,7 +30,7 @@ namespace Peracto.Svg.Converters
       return null;
     }
 
-    private IClipPathFactory GetUrlColor(string value)
+    private static IClipPathFactory GetUrlColor(string value)
     {
       var leftParen = value.IndexOf(')', 5);
       return new ClipPathFactory(

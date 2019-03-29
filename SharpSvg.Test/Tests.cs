@@ -11,19 +11,26 @@ namespace SharpSvg.Test
   {
     public static async Task Process(string testsLocation, string pdfName)
     {
-      var loader = Loader.Create(new Uri(testsLocation));
+      try
+      {
+        var loader = Loader.Create(new Uri(testsLocation));
 
-      var render = new PdfRenderController(loader);
-      using (var stream = File.Create(pdfName))
-        await render.Render(GetFiles(testsLocation), stream);
+        var render = new PdfRenderController(loader);
+        using (var stream = File.Create(pdfName))
+          await render.Render(GetFiles(testsLocation), stream);
 
-      await GetFiles(testsLocation).TestAll(loader);
+        await GetFiles(testsLocation).TestAll(loader);
+      }
+      catch (Exception ex)
+      {   
+        throw ex;
+      }
 
     }
 
     private static IEnumerable<string> GetFiles(string testsLocation)
     {
-      foreach (var x in Directory.EnumerateFiles(Path.Combine(testsLocation, "svg", "painting"), "painting-marker-05-f.svg"))
+      foreach (var x in Directory.EnumerateFiles(Path.Combine(testsLocation, "svg", "coords"), "*.svg"))
       {
         Console.WriteLine($"Processing {x}");
         yield return x;

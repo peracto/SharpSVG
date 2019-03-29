@@ -23,7 +23,17 @@ namespace Peracto.Svg.Converters
             return rc != null;
         }
 
-        private static ITransform ParseFunction(string transformName, IReadOnlyList<float> points)
+        public static bool TryParse(string attributeValue, out ITransform rc)
+        {
+          var transforms = SplitTransforms(attributeValue)
+            .Select(f => ParseFunction(f.Key, f.Value))
+            .ToArray();
+          rc = Simplify(transforms);
+          return rc != null;
+        }
+
+
+    private static ITransform ParseFunction(string transformName, IReadOnlyList<float> points)
         {
             switch (transformName)
             {

@@ -1,4 +1,5 @@
-﻿using Peracto.Svg.Paths;
+﻿using System;
+using Peracto.Svg.Paths;
 using Peracto.Svg.Render.Dx.Utility;
 using Peracto.Svg.Types;
 using DX = SharpDX;
@@ -35,7 +36,14 @@ namespace Peracto.Svg.Render.Dx.Path
         geometries[i++] = geometry;
       }
 
-      return new D2D1.GeometryGroup(target.Factory, fillMode, geometries);
+      try
+      {
+        return new D2D1.GeometryGroup(target.Factory, fillMode, geometries);
+      }
+      catch (Exception ex)
+      {
+        throw ex;
+      }
     }
 
     private class PathVisitor : IPathVisitor<D2D1.GeometrySink>

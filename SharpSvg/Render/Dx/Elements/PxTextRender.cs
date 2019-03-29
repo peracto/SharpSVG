@@ -2,6 +2,7 @@
 using Peracto.Svg.Render.Dx.Utility;
 using Peracto.Svg.Types;
 using System.Linq;
+using System.Threading.Tasks;
 using D2D1 = SharpDX.Direct2D1;
 using DX = SharpDX;
 using DXM = SharpDX.Mathematics.Interop;
@@ -19,7 +20,7 @@ namespace Peracto.Svg.Render.Dx.Elements
       return scale;
     }
 
-    public static async System.Threading.Tasks.Task Render(IElement element, IFrameContext context, RendererDirect2D render)
+    public static Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
       using (LayerHelper.Create(render.Target, render.FontManager, element, context, false))
       {
@@ -27,7 +28,7 @@ namespace Peracto.Svg.Render.Dx.Elements
         var fill = element.GetFill(context);
         var fillBrush = render.CreateBrush(element, context, fill.Brush, fill.Opacity);
 
-        if(fillBrush==null) return;
+        if(fillBrush==null) return Task.CompletedTask;
 
         foreach (var text in element.Children.OfType<ITextContent>())
         {
@@ -56,6 +57,7 @@ namespace Peracto.Svg.Render.Dx.Elements
             }
           }
         }
+        return Task.CompletedTask;
       }
     }
   }
