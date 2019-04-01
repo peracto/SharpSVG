@@ -34,38 +34,63 @@ namespace Peracto.Svg.Render.Dx.Elements
       }
     }
 
-    private static void RenderBitmap(IElement element, IFrameContext context, RendererDirect2D render, D2D1.Bitmap bitmap)
+    private static void RenderBitmap(IElement element, IFrameContext context, RendererDirect2D render,
+      D2D1.Bitmap bitmap)
     {
-      using (LayerHelper.Create(render.Target, render.FontManager, element, context, true))
+      var ratio = element.GetPreserveAspectRatio();
+      var size = element.GetSize(context, context.Size);
+
+      using (TransformHelper.Create(render.Target, element, context, true))
+      using (LayerHelper.Create(render.Target, render.FontManager, element, context, size))
       {
-        var ratio = element.GetPreserveAspectRatio();
-        var size = element.GetSize(context, context.Size);
-        switch (ratio.Align)
+        if (ratio.Option == PreserveAspectRatioOption.None)
         {
-          case PreserveAspectRatioType.None:
+          render.Target.DrawBitmap(
+            bitmap,
+            new DXM.RawRectangleF(0, 0, size.Width, size.Height),
+            element.GetOpacity(),
+            D2D1.BitmapInterpolationMode.NearestNeighbor
+          );
+
+        }
+        else
+        {
+          using (new TransformHelper(render.Target, ratio.CalcMatrix(size, bitmap.Size.FromDx().AsRectangle())))
+          {
             render.Target.DrawBitmap(
               bitmap,
-              new DXM.RawRectangleF(0, 0, size.Width, size.Height),
+              new DXM.RawRectangleF(0, 0, bitmap.Size.Width, bitmap.Size.Height),
               element.GetOpacity(),
               D2D1.BitmapInterpolationMode.NearestNeighbor
             );
-            break;
-          default:
-            using (new TransformHelper(render.Target, ratio.CalcMatrix(size, bitmap.Size.FromDx().AsRectangle())))
-            {
-              render.Target.DrawBitmap(
-                bitmap,
-                new DXM.RawRectangleF(0, 0, bitmap.Size.Width, bitmap.Size.Height),
-                element.GetOpacity(),
-                D2D1.BitmapInterpolationMode.NearestNeighbor
-              );
-            }
-            break;
+          }
         }
       }
     }
 
-    private static async Task RenderDocument(IElement element, IFrameContext context, RendererDirect2D render, IDocument doc)
+    public static async Task RenderDocument(IElement element, IFrameContext context, RendererDirect2D render,
+      IDocument doc)
+    {
+      var ratio = element.GetPreserveAspectRatio();
+      var size = element.GetSize(context, context.Size);
+
+      var child = doc.RootElement;
+      if (child == null) return;
+
+      var viewPort = child.TryGetViewBox(out var viewBox)
+        ? viewBox.AsRectangle()
+        : element.GetSize(context, context.Size).AsRectangle();
+
+      var newContext = context.Create(viewPort.Size);
+
+      using (TransformHelper.Create(render.Target, element, context, true))
+      using (LayerHelper.Create(render.Target, render.FontManager, element, context, size))
+      using (new TransformHelper(render.Target, ratio.CalcMatrix(size, viewPort)))
+        await render.GetRenderer(child.ElementType)(child, newContext, render);
+    }
+/*
+
+    private static async Task RenderDocument2(IElement element, IFrameContext context, RendererDirect2D render, IDocument doc)
     {
       var fragment = doc?.RootElement;
       if (fragment == null) return;
@@ -110,11 +135,9 @@ namespace Peracto.Svg.Render.Dx.Elements
           Opacity = element.GetOpacity(),
           OpacityBrush = null
         });
-    }
+    }*/
   }
 }
-
-
 /*
    public D2D1.Bitmap GetBitmap(D2D1.Bitmap frame, RendererDirect2D render)
    {

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
 using D2D1 = SharpDX.Direct2D1;
 using D3D = SharpDX.Direct3D;
 using D3D11 = SharpDX.Direct3D11;
@@ -46,38 +47,46 @@ namespace Peracto.Svg.Render.Dx.Render
 
         foreach (var fn in docNames)
         {
-          var document = await Loader.Load(new Uri(fn, UriKind.RelativeOrAbsolute));
-
-          var children = document.Children.Count;
-
-          if (children == 0)
-            continue;
-
-          var svg = document.RootElement;
-          if (svg == null)
-            continue;
-
-          using (var renderer = new RendererDirect2D(this, dc))
-          using (var commandList = new D2D1.CommandList(dc))
+          try
           {
-            dc.Target = commandList;
-            dc.BeginDraw();
+            var document = await Loader.Load(new Uri(fn, UriKind.RelativeOrAbsolute));
 
-            var xx = svg.TryGetViewBox(out var vb) ? vb.Size : new PxSize(pageSize.Width, pageSize.Height);
-            var rootFrame = FrameContext.CreateRoot(xx.Width, xx.Height);
-            var frameSize = svg.GetSize(rootFrame, xx);
+            var children = document.Children.Count;
+
+            if (children == 0)
+              continue;
+
+            var svg = document.RootElement;
+            if (svg == null)
+              continue;
+
+            using (var renderer = new RendererDirect2D(this, dc))
+            using (var commandList = new D2D1.CommandList(dc))
+            {
+              dc.Target = commandList;
+              dc.BeginDraw();
+
+              var xx = svg.TryGetViewBox(out var vb) ? vb.Size : new PxSize(pageSize.Width, pageSize.Height);
+              var rootFrame = FrameContext.CreateRoot(xx.Width, xx.Height);
+              var frameSize = svg.GetSize(rootFrame, xx);
 
 
-           // var rootFrame = FrameContext.CreateRoot(pageSize.Width, pageSize.Height);
-           // var frameSize = svg.GetSize(rootFrame, new PxSize(pageSize.Width, pageSize.Height));
+              // var rootFrame = FrameContext.CreateRoot(pageSize.Width, pageSize.Height);
+              // var frameSize = svg.GetSize(rootFrame, new PxSize(pageSize.Width, pageSize.Height));
 
-            var r = RenderRegistry.Get(svg.ElementType);
-            if (r != null)
-              await r(svg, rootFrame.Create(frameSize), renderer);
+              var r = RenderRegistry.Get(svg.ElementType);
+              if (r != null)
+                await r(svg, rootFrame.Create(frameSize), renderer);
 
-            dc.EndDraw();
-            commandList.Close();
-            printControl.AddPage(commandList, pageSize);
+              dc.EndDraw();
+              commandList.Close();
+              printControl.AddPage(commandList, pageSize);
+            }
+          }
+          catch (Exception ex)
+          {
+            Console.WriteLine("Skipping {0}",ex);
+            //throw ex;
           }
         }
         // Send the job to the printing subsystem and discard

@@ -6,6 +6,7 @@ namespace Peracto.Svg.Accessor
   {
     T GetValue<T>(string attributeName);
     void Add(IEnumerable<IElementAttribute> attributes);
+    void Replace(IEnumerable<IElementAttribute> attributes);
     bool TryGetValue<T>(string attributeName, out T outValue);
     bool TryGetOriginal(string attributeName, out string outValue);
     bool Contains(string attributeName);

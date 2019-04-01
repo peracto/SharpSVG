@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Peracto.Svg.Types;
+using SharpDX.Mathematics.Interop;
 using D2D1 = SharpDX.Direct2D1;
 using DXGI = SharpDX.DXGI;
 using WIC = SharpDX.WIC;
@@ -31,6 +32,7 @@ namespace Peracto.Svg.Render.Dx.Render
       {
         var dc = renderer.Target;
         dc.BeginDraw();
+        dc.Clear(new RawColor4(1f,1f,1f,1f));
         var r = RenderRegistry.Get("svg");
           if(r!=null) await r(svg, FrameContext.CreateRoot(dc.Size.Width, dc.Size.Height), renderer);
         dc.EndDraw();
@@ -52,12 +54,12 @@ namespace Peracto.Svg.Render.Dx.Render
     {
       _bitmap = wicBitmap = new WIC.Bitmap(
         WicFactory,
-        (int)size.Width,
-        (int)size.Height,
+        (int)(size.Width*1.0f),
+        (int)(size.Height*1.0f),
         WIC.PixelFormat.Format32bppPBGRA,
         WIC.BitmapCreateCacheOption.CacheOnLoad
       );
-      wicBitmap.SetResolution(600, 600);
+      wicBitmap.SetResolution(200, 200);
 
       var renderProps = new D2D1.RenderTargetProperties(
         D2D1.RenderTargetType.Default,
@@ -65,8 +67,8 @@ namespace Peracto.Svg.Render.Dx.Render
           DXGI.Format.B8G8R8A8_UNorm,
           D2D1.AlphaMode.Premultiplied
         ),
-        600,
-        600,
+        96,
+        96,
         D2D1.RenderTargetUsage.None, //GdiCompatible| D2D1.RenderTargetUsage.ForceBitmapRemoting,
         D2D1.FeatureLevel.Level_DEFAULT
       );

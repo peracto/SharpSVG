@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Peracto.Svg.Brush;
 using Peracto.Svg.Render.Dx.Font;
+using SharpDX;
 using SharpDX.DirectWrite;
 using SharpDX.Mathematics.Interop;
 using D2D1 = SharpDX.Direct2D1;
@@ -14,6 +15,18 @@ using D2D1 = SharpDX.Direct2D1;
 
 namespace Peracto.Svg.Render.Dx.Path
 {
+
+  public static class FontHelpers
+  {
+    public static short[] GetGlyphIndices(this FontFace @this, string input)
+    {
+      var codePoints = new List<int>();
+      for (var i = 0; i < input.Length; i += char.IsSurrogatePair(input, i) ? 2 : 1)
+        codePoints.Add(char.ConvertToUtf32(input, i));
+      var cpi = codePoints.ToArray();
+      return @this.GetGlyphIndices(cpi);
+    }
+  }
   public class ClipPathBuilder
   {
     public static D2D1.Geometry Create(D2D1.RenderTarget target, FontManager fontManager, IFrameContext context, IClip clipPath, IElement targetElement)
@@ -38,10 +51,9 @@ namespace Peracto.Svg.Render.Dx.Path
       }
     }
 
+
     private static D2D1.Geometry CreateGeometry(D2D1.RenderTarget target, FontManager fontManager, IElement element, IFrameContext context, ClipPathUnits clipPathUnits, IElement targetElement)
     {
-      Console.WriteLine($"Building Clip Geom {element.ElementType}");
-
       if (clipPathUnits == ClipPathUnits.UserSpaceOnUse)
       {
         switch (element.ElementType)
@@ -50,7 +62,6 @@ namespace Peracto.Svg.Render.Dx.Path
             return new D2D1.RectangleGeometry(target.Factory, element.GetBounds(context).ToDx());
           case "circle":
             var r = element.GetRadius(context);
-            Console.WriteLine($"Building Clip Geom {element.ElementType} radius={r}");
             return new D2D1.EllipseGeometry(target.Factory, new D2D1.Ellipse()
             {
               Point = element.GetCxCy(context).ToDx(),
@@ -65,25 +76,27 @@ namespace Peracto.Svg.Render.Dx.Path
             {
               var font = element.GetFont(context);
               var fontFace = fontManager.GetFontFace(font);
-
-              var input = "ABC";
-
-              var codePoints = new List<int>();
-              for (var i = 0; i < input.Length; i += char.IsSurrogatePair(input, i) ? 2 : 1)
-                codePoints.Add(char.ConvertToUtf32(input, i));
-              var cpi = codePoints.ToArray();
-              var glyphIndices = fontFace.GetGlyphIndices(cpi);
-
+              var glyphIndices = fontFace.GetGlyphIndices("Clip Test");
+              var xx = new[] {35f, 50f, 55f, 65f, 45f, 48f, 52f, 32f, 61f};
               fontFace.GetGlyphRunOutline(
                 font.Size,
                 glyphIndices,
+                xx,
                 null,
-                null,
-                codePoints.Count,
+                glyphIndices.Length,
                 false,
                 false,
                 sink);
-              return geom;
+
+              sink.Close();
+
+              return new D2D1.TransformedGeometry(
+                target.Factory,
+                geom,
+                Matrix3x2.Translation(0,font.Size)
+                );
+
+              //return geom;
             }
 
           default:
@@ -102,7 +115,6 @@ namespace Peracto.Svg.Render.Dx.Path
             var h = targetBounds.Height * rectBounds.Height;
             var x = targetBounds.X + (targetBounds.Width * rectBounds.X);
             var y = targetBounds.Y + (targetBounds.Height * rectBounds.Y);
-            Console.WriteLine($"ClipRect:{x},{y},{w},{h} => {rectBounds.X},{rectBounds.Y},{rectBounds.Width},{rectBounds.Height} => {targetBounds.X},{targetBounds.Y},{targetBounds.Width},{targetBounds.Height}");
             return new D2D1.RectangleGeometry(
               target.Factory, 
               new RawRectangleF(x,y,x+w,y+h)
@@ -110,7 +122,6 @@ namespace Peracto.Svg.Render.Dx.Path
           case "circle":
             var r = element.GetRadius(context);
             var cxCy = element.GetCxCy(context);
-            Console.WriteLine($"Building Clip Geom {element.ElementType} radius={r}");
             return new D2D1.EllipseGeometry(target.Factory, new D2D1.Ellipse()
             {
               Point = new RawVector2(targetBounds.X+(cxCy.X*targetBounds.Width),targetBounds.Y+(cxCy.Y*targetBounds.Height)),

@@ -274,16 +274,23 @@ namespace Peracto.Svg
 
     public static Stroke GetStroke(this IElement element, IFrameContext context)
     {
-      return new Stroke(
-        AA.Stroke.GetValue(element)?.Create(element),
-        AA.StrokeWidth.GetValue(element).Resolve(element, context),
-        AA.StrokeOpacity.GetValue(element).AsCheckedNumber(),
-        AA.StrokeLineCap.GetValue(element),
-        AA.StrokeLineJoin.GetValue(element),
-        AA.StrokeMiterLimit.GetValue(element),
-        AA.StrokeDashOffset.GetValue(element).Resolve(element,context),
-        AA.StrokeDashArray.GetValue(element)?.Select(context.ToDeviceValue).ToArray()
-      );
+      try
+      {
+        return new Stroke(
+          AA.Stroke.GetValue(element)?.Create(element),
+          AA.StrokeWidth.GetValue(element).Resolve(element, context),
+          AA.StrokeOpacity.GetValue(element).AsCheckedNumber(),
+          AA.StrokeLineCap.GetValue(element),
+          AA.StrokeLineJoin.GetValue(element),
+          AA.StrokeMiterLimit.GetValue(element),
+          AA.StrokeDashOffset.GetValue(element).Resolve(element, context),
+          AA.StrokeDashArray.GetValue(element)?.Select(context.ToDeviceValue).ToArray()
+        );
+      }
+      catch (Exception ex)
+      {
+        throw ex;
+      }
     }
 
     public static float Resolve(this Percent measure, float something)
@@ -307,7 +314,22 @@ namespace Peracto.Svg
       }
     }
 
-    public static float Resolve(this Measure measure, IElement element, IFrameContext context, PxRectangle size)
+    private static float ResolvePercentage(float value, ref PxRectangle size, MeasureUsage usage)
+    {
+      // ReSharper disable once SwitchStatementMissingSomeCases
+      switch (usage)
+      {
+        case MeasureUsage.Horizontal:
+          return (size.Width * value) / 100;
+        case MeasureUsage.Vertical:
+          return (size.Height * value) / 100;
+        default:
+          return 0.0f;
+      }
+    }
+
+    public static float Resolve(this Measure measure, IElement element, IFrameContext context, PxRectangle size,
+      bool TreatUserAsPercentage = false)
     {
       // ReSharper disable once SwitchStatementMissingSomeCases
       switch (measure.Unit)
@@ -316,17 +338,12 @@ namespace Peracto.Svg
           return measure.Value * element.GetFontSize(context);
         case MeasureUnit.Ex:
           return (measure.Value * element.GetFontSize(context)) / 2;
+        case MeasureUnit.User:
+          return TreatUserAsPercentage
+            ? ResolvePercentage(measure.Value * 100, ref size, measure.Usage)
+            : context.ToDeviceValue(measure);
         case MeasureUnit.Percentage:
-          // ReSharper disable once SwitchStatementMissingSomeCases
-          switch (measure.Usage)
-          {
-            case MeasureUsage.Horizontal:
-              return (size.Width * measure.Value) / 100;
-            case MeasureUsage.Vertical:
-              return (size.Height * measure.Value) / 100;
-            default:
-              return 0.0f;
-          }
+          return ResolvePercentage(measure.Value, ref size, measure.Usage);
         default:
           return context.ToDeviceValue(measure);
       }

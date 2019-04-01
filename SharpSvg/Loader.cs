@@ -41,11 +41,16 @@ namespace Peracto.Svg
       }
     }
 
+    public bool IsValidNamespace(string namespaceUri)
+    {
+      return (namespaceUri == "" || 
+              namespaceUri == "http://www.w3.org/2000/svg" ||
+              namespaceUri == "http://www.w3.org/1999/xlink");
+    }
+
     public virtual string TransformName(string namespaceUri, string localName)
     {
-      return
-        (namespaceUri == "" || namespaceUri == "http://www.w3.org/2000/svg" ||
-         namespaceUri == "http://www.w3.org/1999/xlink")
+      return IsValidNamespace(namespaceUri)
           ? localName
           : null;
     }
@@ -85,7 +90,7 @@ namespace Peracto.Svg
       {
         if (!_styles.TryGetValue(attr.Name, out var rules))
           _styles.Add(attr.Name, (attr, specificity));
-        else if (rules.specificity <= specificity)
+        else if (specificity >= rules.specificity)
           _styles[attr.Name] = (attr, specificity);
       }
 
@@ -154,21 +159,19 @@ namespace Peracto.Svg
           }
 
           foreach (var decl in rule.Declarations)
+          {
             styleHelper.Add(new ElementAttribute(decl.Name, decl.Term.ToString()), selector.GetSpecificity());
+          }
         }
       }
 
       foreach (var elem in elementDict)
       {
-        foreach (var kvp in elem.Value.GetFinalStyles())
-        {
-          var a = AttributeFactory.Create(elem.Key.ElementType, kvp.Name, (kvp.Value as string)?.Trim());
-          if(a==null)
-            Debugger.Break();
-        }
-        elem.Key.Attributes.Add(
+        elem.Key.Attributes.Replace(
           from kvp in elem.Value.GetFinalStyles()
-          select AttributeFactory.Create(elem.Key.ElementType, kvp.Name, (kvp.Value as string)?.Trim())
+          let attr = AttributeFactory.Create(elem.Key.ElementType, kvp.Name, (kvp.Value as string)?.Trim())
+          where attr != null
+          select attr
         );
       }
 
@@ -180,6 +183,7 @@ namespace Peracto.Svg
     {
       var stack = new Stack<IElement>();
       var doc = new Document(baseUri);
+      var isValidNamespace = true;
       IElement current = doc;
 
       while (await reader.ReadAsync())

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Peracto.Svg.Paths;
 using Peracto.Svg.Types;
 using Peracto.Svg.Utility;
@@ -312,7 +314,12 @@ namespace Peracto.Svg.Converters
       {
         if (TryGetValueRaw(out var v))
         {
-          x = float.Parse(v);
+          if(float.TryParse(v,out x)) return true;
+
+          if (float.TryParse(v, NumberStyles.Float | NumberStyles.AllowThousands | NumberStyles.AllowDecimalPoint, NumberFormatInfo.CurrentInfo,  out x)) return true;
+          
+
+                    x = 0;
           return true;
         }
         x = 0;
@@ -441,12 +448,12 @@ namespace Peracto.Svg.Converters
         while (!rdr.Eof)
         {
           var ch = rdr.Peek();
-          if (ch == '-' || ch == '+' || ch=='.' || char.IsDigit(ch))
+          if (ch == '-' || ch == '+' || ch == '.' || char.IsDigit(ch))
           {
             var p = rdr.Position;
             rdr.Consume();
             while (char.IsDigit(rdr.Peek())) rdr.Consume();
-            if (rdr.Peek() == '.')
+            if (ch != '.' && rdr.Peek() == '.')
             {
               rdr.Consume();
               while (char.IsDigit(rdr.Peek())) rdr.Consume();

@@ -56,6 +56,42 @@ namespace Peracto.Svg.Image
 
     public PxMatrix CalcMatrix(PxSize viewPort, PxRectangle imageSize)
     {
+      if (Option == PreserveAspectRatioOption.None)
+      {
+        return PxMatrix.Translation(
+          viewPort.Height / imageSize.Height,
+          viewPort.Width / imageSize.Width,
+          0,
+          0
+        );
+      }
+
+      var scale = Option == PreserveAspectRatioOption.Meet
+        ? Math.Min(
+          viewPort.Height / imageSize.Height,
+          viewPort.Width / imageSize.Width
+        )
+        : Math.Max(
+          viewPort.Height / imageSize.Height,
+          viewPort.Width / imageSize.Width
+        );
+
+      var scaledW = imageSize.Width * scale;
+      var scaledH = imageSize.Height * scale;
+
+      var scaleX = scaledW / imageSize.Width;
+      var scaleY = scaledH / imageSize.Height;
+
+      return PxMatrix.Translation(
+        scaleX,
+        scaleY,
+        imageSize.X + CalcOffset(AlignX, viewPort.Width, scaledW),  // / scaleX,
+        imageSize.Y + CalcOffset(AlignY, viewPort.Height, scaledH) // / scaleY
+      );
+    }
+
+    public PxMatrix CalcMatrixOld(PxSize viewPort, PxRectangle imageSize)
+    {
       switch (Option)
       {
         case PreserveAspectRatioOption.None:
@@ -66,7 +102,7 @@ namespace Peracto.Svg.Image
             0,
             0
           );
-          }
+        }
         case PreserveAspectRatioOption.Meet:
         {
           var scale = Math.Min(

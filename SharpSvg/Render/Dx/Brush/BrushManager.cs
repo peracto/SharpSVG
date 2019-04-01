@@ -48,16 +48,17 @@ namespace Peracto.Svg.Render.Dx.Brush
     public D2D1.Brush CreateLinearGradientBrush(IElement element, IFrameContext context, float opacity,
       LinearGradientBrush brush)
     {
-      var tag = brush.GradientUnits == GradientUnits.UserSpaceOnUse ? $"{brush.Tag}::{context.LayerId}" : null;
+      var objectBoundingBox = brush.GradientUnits == GradientUnits.ObjectBoundingBox;
+      var tag = !objectBoundingBox ? $"{brush.Tag}::{context.LayerId}" : null;
       if (tag != null && _brushes.TryGetValue(tag, out var dxBrush)) return dxBrush;
 
       var renderSize = Path.ClipPathBuilder.GetBounds(element, context);
 
       //TODO: Should rendersize relate to the frame if it's in object space?
-      var x1 = brush.X1.Resolve(element, context, renderSize);
-      var y1 = brush.Y1.Resolve(element, context, renderSize);
-      var x2 = brush.X2.Resolve(element, context, renderSize);
-      var y2 = brush.Y2.Resolve(element, context, renderSize);
+      var x1 = brush.X1.Resolve(element, context, renderSize, objectBoundingBox);
+      var y1 = brush.Y1.Resolve(element, context, renderSize, objectBoundingBox);
+      var x2 = brush.X2.Resolve(element, context, renderSize, objectBoundingBox);
+      var y2 = brush.Y2.Resolve(element, context, renderSize, objectBoundingBox);
 
       var dx = x2 - x1;
       var dy = y2 - y1;
@@ -99,17 +100,19 @@ namespace Peracto.Svg.Render.Dx.Brush
 
     public D2D1.Brush CreateRadialGradientBrush(IElement element, IFrameContext context, float opacity, RadialGradientBrush brush)
     {
-      var tag = brush.GradientUnits == GradientUnits.UserSpaceOnUse ? $"{brush.Tag}::{context.LayerId}" : null;
+      var objectBoundingBox = brush.GradientUnits == GradientUnits.ObjectBoundingBox;
+
+      var tag = !objectBoundingBox ? $"{brush.Tag}::{context.LayerId}" : null;
       if (tag != null && _brushes.TryGetValue(tag, out var dxBrush)) return dxBrush;
 
       var renderSize = Path.ClipPathBuilder.GetBounds(element, context);
      // var size = (brush.GradientUnits == GradientUnits.ObjectBoundingBox) ? renderSize.Size : context.Size;
 
-      var cx = brush.Cx.Resolve(element, context, renderSize);
-      var cy = brush.Cy.Resolve(element, context, renderSize);
-      var fx = brush.Fx.Resolve(element, context, renderSize);
-      var fy = brush.Fy.Resolve(element, context, renderSize);
-      var rx = brush.R.Resolve(element, context, renderSize);
+      var cx = brush.Cx.Resolve(element, context, renderSize, objectBoundingBox);
+      var cy = brush.Cy.Resolve(element, context, renderSize, objectBoundingBox);
+      var fx = brush.Fx.Resolve(element, context, renderSize, objectBoundingBox);
+      var fy = brush.Fy.Resolve(element, context, renderSize, objectBoundingBox);
+      var rx = brush.R.Resolve(element, context, renderSize, objectBoundingBox);
 
       var gsc = (
         from stop in brush.Stops

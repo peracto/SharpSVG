@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Peracto.Svg.Accessor
 {
   public class AttributeBag : IAttributeBag
   {
-    private readonly IList<IElementAttribute> _attributes;
+    private IList<IElementAttribute> _attributes;
 
     public AttributeBag()
     {
@@ -17,6 +18,11 @@ namespace Peracto.Svg.Accessor
     {
       foreach (var l in list)
         Set(l);
+    }
+
+    public void Replace(IEnumerable<IElementAttribute> list)
+    {
+      _attributes = list.ToList();
     }
 
     public int Count => _attributes.Count;

@@ -22,7 +22,8 @@ namespace Peracto.Svg.Render.Dx.Elements
 
     public static Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
-      using (LayerHelper.Create(render.Target, render.FontManager, element, context, false))
+      using (TransformHelper.Create(render.Target, element, context, false))
+      using (LayerHelper.Create(render.Target, render.FontManager, element, context))
       {
         var font = element.GetFont(context);
         var fill = element.GetFill(context);

@@ -13,9 +13,6 @@ namespace Peracto.Svg.Render.Dx.Utility
       var matrix = setPosition
         ? element.GetTransformMatrix() * PxMatrix.Translate(element.GetPosition(context))
         : element.GetTransformMatrix();
-//      var matrix = setPosition
-  //      ? element.GetTransform().ToMatrix() * element.GetPosition(context).ToMatrix()
-    //    : element.GetTransform().ToMatrix();
 
       return setPosition || !matrix.IsIdentity
         ? new TransformHelper(target, matrix)
@@ -30,11 +27,8 @@ namespace Peracto.Svg.Render.Dx.Utility
       _matrix = target.Transform;
       target.Transform = matrix * _matrix;
     }
-    public TransformHelper(D2D1.RenderTarget target, PxMatrix matrix)
+    public TransformHelper(D2D1.RenderTarget target, PxMatrix matrix) : this(target, matrix.ToMatrix3x2())
     {
-      _target = target;
-      _matrix = target.Transform;
-      target.Transform = matrix.ToMatrix3x2() * _matrix;
     }
 
     void IDisposable.Dispose()

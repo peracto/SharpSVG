@@ -17,5 +17,9 @@
     <ProjectReference Include="..\SharpSvg\SharpSvg.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="W3CTestSuite\svg\struct\support\" />
+  </ItemGroup>
+
 
 </Project>
