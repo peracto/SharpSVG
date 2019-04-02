@@ -20,7 +20,7 @@ namespace Peracto.Svg.Brush
           return brush.Create(context);
         context = context.Parent;
       }
-      return AttributeAccessors.Color.DefaultValue.Create(context);
+      return AttributeAccessors.Color.DefaultValue.Create(null);
     }
   }
 }

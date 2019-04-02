@@ -7,14 +7,14 @@ namespace Peracto.Svg.Brush
   public class SolidColourBrushFactory : IBrushFactory
   {
     public static readonly IBrushFactory Black = new SolidColourBrushFactory(PxColors.Black);
-    private static readonly IDictionary<PxColor, IBrushFactory> colors =
+    private static readonly IDictionary<PxColor, IBrushFactory> Colors =
       new ConcurrentDictionary<PxColor, IBrushFactory>();
 
     public static IBrushFactory GetColor(PxColor color)
     {
-      if (colors.TryGetValue(color, out var outVal)) return outVal;
+      if (Colors.TryGetValue(color, out var outVal)) return outVal;
       outVal = new SolidColourBrushFactory(color);
-      colors.Add(color, outVal);
+      Colors.Add(color, outVal);
       return outVal;
     }
 

@@ -21,19 +21,5 @@ namespace Peracto.Svg.Converters
         return false;
       }
     }
-
-    public static bool TryParse(string uriString, out HrefServer value)
-    {
-      try
-      {
-        value = new HrefServer(uriString);
-        return true;
-      }
-      catch
-      {
-        value = null;
-        return false;
-      }
-    }
   }
 }

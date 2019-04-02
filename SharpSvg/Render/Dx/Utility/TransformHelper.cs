@@ -1,39 +1,51 @@
-﻿using System;
+﻿using Peracto.Svg.Render.Dx.Render;
 using Peracto.Svg.Types;
-using DX=SharpDX;
-using D2D1=SharpDX.Direct2D1;
-using DXM=SharpDX.Mathematics.Interop;
+using System;
+using D2D1 = SharpDX.Direct2D1;
+using DXM = SharpDX.Mathematics.Interop;
 
 namespace Peracto.Svg.Render.Dx.Utility
 {
-  public class TransformHelper : IDisposable
+  public static class TransformHelper
   {
-    public static IDisposable Create(D2D1.RenderTarget target, IElement element, IFrameContext context, bool setPosition)
+    public static IDisposable Create(RendererDirect2D render, IElement element, IFrameContext context)
     {
-      var matrix = setPosition
-        ? element.GetTransformMatrix() * PxMatrix.Translate(element.GetPosition(context))
-        : element.GetTransformMatrix();
-
-      return setPosition || !matrix.IsIdentity
-        ? new TransformHelper(target, matrix)
+      var transform = element.GetTransform();
+      return transform != null
+        ? new TransformHelperImpl(render.Target, transform.Matrix)
         : null;
     }
 
-    private readonly D2D1.RenderTarget _target;
-    private readonly DXM.RawMatrix3x2 _matrix;
-    public TransformHelper(D2D1.RenderTarget target, DX.Matrix3x2 matrix)
+    public static IDisposable CreatePosition(RendererDirect2D render, IElement element, IFrameContext context)
     {
-      _target = target;
-      _matrix = target.Transform;
-      target.Transform = matrix * _matrix;
-    }
-    public TransformHelper(D2D1.RenderTarget target, PxMatrix matrix) : this(target, matrix.ToMatrix3x2())
-    {
+      var transform = element.GetTransform();
+      return transform == null
+        ? new TransformHelperImpl(render.Target, element.GetPositionMatrix(context))
+        : new TransformHelperImpl(render.Target, transform.Matrix * element.GetPositionMatrix(context));
     }
 
-    void IDisposable.Dispose()
+
+    public static IDisposable Create(RendererDirect2D render, PxMatrix matrix)
     {
-      _target.Transform = _matrix;
+      return new TransformHelperImpl(render.Target, matrix);
+    }
+
+    private class TransformHelperImpl : IDisposable
+    {
+      private readonly D2D1.RenderTarget _target;
+      private readonly DXM.RawMatrix3x2 _matrix;
+
+      public TransformHelperImpl(D2D1.RenderTarget target, PxMatrix matrix) 
+      {
+        _target = target;
+        _matrix = target.Transform;
+        target.Transform = matrix.ToMatrix3x2() * _matrix;
+      }
+
+      void IDisposable.Dispose()
+      {
+        _target.Transform = _matrix;
+      }
     }
   }
 }

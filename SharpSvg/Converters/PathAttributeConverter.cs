@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Peracto.Svg.Paths;
+﻿using Peracto.Svg.Paths;
 using Peracto.Svg.Types;
 using Peracto.Svg.Utility;
-using SharpDX.DirectWrite;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace Peracto.Svg.Converters
 {
@@ -76,7 +72,7 @@ namespace Peracto.Svg.Converters
 
     protected override bool TryCreate(string attributeValue,  out Path path)
     {
-      var bounds = new XYRect();
+      var bounds = new XyRect();
       var segments = new List<PathSegment>();
       foreach (var ps in GetPathSegments(attributeValue))
       {
@@ -89,7 +85,7 @@ namespace Peracto.Svg.Converters
 
     public static bool TryParse(string value, out Path path)
     {
-      var bounds = new XYRect();
+      var bounds = new XyRect();
       var segments = new List<PathSegment>();
       foreach (var ps in GetPathSegments(value))
       {
@@ -103,7 +99,7 @@ namespace Peracto.Svg.Converters
     protected static IEnumerable<PathSegment> GetPathSegments(string attributeValue)
     {
       IList<IPathCommand> stack = null;
-      var bounds = new XYRect();
+      var bounds = new XyRect();
       var cursor = new PxPoint(0, 0);
       var start = new PxPoint(0,0);
       IPathCommand previous = null;
@@ -124,7 +120,7 @@ namespace Peracto.Svg.Converters
           }
 
           stack = new List<IPathCommand>();
-          bounds = new XYRect();
+          bounds = new XyRect();
           start = c.NextPoint;
           stack.Add(c);
         }
@@ -137,7 +133,7 @@ namespace Peracto.Svg.Converters
           }
 
           stack = null;
-          bounds = new XYRect();
+          bounds = new XyRect();
         }
         else
         {
@@ -162,12 +158,12 @@ namespace Peracto.Svg.Converters
     {
       var parser = new PathParser(text);
 
-      float x1 = 0;
-      float y1 = 0;
-      float x2 = 0;
-      float y2 = 0;
-      float x3 = 0;
-      float y3 = 0;
+      float x1;
+      float y1;
+      float x2;
+      float y2;
+      float x3;
+      float y3;
 
       var action = '\0';
 
@@ -239,18 +235,18 @@ namespace Peracto.Svg.Converters
       public string Value { get; private set; }
     }
 
-    private class XYRect
+    private class XyRect
     {
       private readonly  float _x1;
       private readonly float _y1;
       private readonly float _x2;
       private readonly float _y2;
 
-      public XYRect()
+      public XyRect()
       {
       }
 
-      private XYRect(float x1, float y1, float x2, float y2)
+      private XyRect(float x1, float y1, float x2, float y2)
       {
         _x1 = x1;
         _y1 = y1;
@@ -258,9 +254,9 @@ namespace Peracto.Svg.Converters
         _y2 = y2;
       }
 
-      public XYRect AddPoint(PxPoint pt)
+      public XyRect AddPoint(PxPoint pt)
       {
-        return new XYRect(
+        return new XyRect(
           Math.Min(_x1, pt.X),
           Math.Min(_y1, pt.Y),
           Math.Max(_x2, pt.X),
@@ -268,9 +264,9 @@ namespace Peracto.Svg.Converters
         );
       }
 
-      public XYRect Add(PxRectangle r)
+      public XyRect Add(PxRectangle r)
       {
-        return new XYRect(
+        return new XyRect(
           Math.Min(_x1, r.X),
           Math.Min(_y1, r.Y),
           Math.Max(_x2, r.X + r.Width),
@@ -278,7 +274,7 @@ namespace Peracto.Svg.Converters
         );
       }
 
-      public static   implicit operator PxRectangle(XYRect r)
+      public static   implicit operator PxRectangle(XyRect r)
       {
         return new PxRectangle(r._x1,r._y1,r._x2-r._x1,r._y2-r._y1);
       }

@@ -2,7 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq.Expressions;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using D2D1 = SharpDX.Direct2D1;
 using D3D = SharpDX.Direct3D;
 using D3D11 = SharpDX.Direct3D11;
@@ -28,13 +29,13 @@ namespace Peracto.Svg.Render.Dx.Render
       D2DDevice = new D2D1.Device(DxgiDevice); // initialize the D2D device
     }
 
-    public async System.Threading.Tasks.Task Render(IEnumerable<string> docNames, Stream outStream)
+    public async Task Render(IEnumerable<string> docNames, Stream outStream)
     {
       var ticket = Printing.Printing.CreateTicketForPrinter("Microsoft Print to PDF");
 
       var pms = ticket.PageMediaSize;
 
-      var pageSize = new DX.Size2F(
+      var pageSize = new PxSize(
         (pms.Width != null) ? (float)pms.Width : 4962,
         (pms.Height != null) ? (float)pms.Height : 7014
       );
@@ -45,6 +46,11 @@ namespace Peracto.Svg.Render.Dx.Render
       {
         dc.DotsPerInch = new DX.Size2F(600, 600);
 
+        var pageStack = new List<RendererDirect2D> ();
+        var pageY = 0;
+        var frameContext = FrameContext.CreateRoot(pageSize);
+        D2D1.CommandList commandList = null;
+
         foreach (var fn in docNames)
         {
           try
@@ -52,49 +58,63 @@ namespace Peracto.Svg.Render.Dx.Render
             var document = await Loader.Load(new Uri(fn, UriKind.RelativeOrAbsolute));
 
             var children = document.Children.Count;
-
-            if (children == 0)
-              continue;
-
+            if (children == 0) continue;
             var svg = document.RootElement;
-            if (svg == null)
-              continue;
+            if (svg == null) continue;
 
-            using (var renderer = new RendererDirect2D(this, dc))
-            using (var commandList = new D2D1.CommandList(dc))
+            var size = svg.GetSize(frameContext, pageSize);
+            var viewPort = svg.GetViewBox()?.AsRectangle() ?? size.AsRectangle();
+
+            if (pageStack.Count > 0 && pageY+ ((int)viewPort.Height+0.5f) > pms.Height)
             {
-              dc.Target = commandList;
-              dc.BeginDraw();
-
-              var xx = svg.TryGetViewBox(out var vb) ? vb.Size : new PxSize(pageSize.Width, pageSize.Height);
-              var rootFrame = FrameContext.CreateRoot(xx.Width, xx.Height);
-              var frameSize = svg.GetSize(rootFrame, xx);
-
-
-              // var rootFrame = FrameContext.CreateRoot(pageSize.Width, pageSize.Height);
-              // var frameSize = svg.GetSize(rootFrame, new PxSize(pageSize.Width, pageSize.Height));
-
-              var r = RenderRegistry.Get(svg.ElementType);
-              if (r != null)
-                await r(svg, rootFrame.Create(frameSize), renderer);
-
               dc.EndDraw();
               commandList.Close();
-              printControl.AddPage(commandList, pageSize);
+              printControl.AddPage(commandList, new DX.Size2F(pageSize.Width, pageSize.Height));
+              commandList.Dispose();
+              foreach (var r in pageStack) r.Dispose();
+              pageStack.Clear();
+              pageY = 0;
+              commandList = null;
             }
+
+            dc.Transform = DX.Matrix3x2.Translation(0,pageY);
+
+            if (commandList == null)
+            {
+              commandList = new D2D1.CommandList(dc);
+              dc.Target = commandList;
+              dc.BeginDraw();
+            }
+
+            var render = new RendererDirect2D(this, dc);
+            await render.GetRenderer(svg.ElementType)(svg, FrameContext.CreateRoot(pageSize), render);
+            pageStack.Add(render);
+
+            pageY += (int)(viewPort.Height+0.5f);
           }
           catch (Exception ex)
           {
-            Console.WriteLine("Skipping {0}",ex);
+            Console.WriteLine("Skipping {0}", ex);
             //throw ex;
           }
         }
+
+        if (pageStack.Count > 0)
+        {
+          dc.EndDraw();
+          commandList.Close();
+          printControl.AddPage(commandList, new DX.Size2F(pageSize.Width, pageSize.Height));
+          commandList.Dispose();
+          foreach (var r in pageStack) r.Dispose();
+          pageStack.Clear();
+        }
+
         // Send the job to the printing subsystem and discard
         // printing-specific resources.
         printControl.Close();
       }
     }
-
+    
     public override void Dispose()
     {
       D3DDevice.Dispose();

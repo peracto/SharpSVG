@@ -1,115 +1,96 @@
-﻿using Peracto.Svg.Render.Dx.Path;
+﻿using Peracto.Svg.Render.Dx.Render;
 using Peracto.Svg.Types;
 using System;
-using System.Diagnostics;
-using Peracto.Svg.Render.Dx.Font;
 using D2D1 = SharpDX.Direct2D1;
-using DX = SharpDX;
 using DXM = SharpDX.Mathematics.Interop;
 
 namespace Peracto.Svg.Render.Dx.Utility
 {
-  public class LayerHelper : IDisposable
+  public static class LayerHelper 
   {
-    private readonly D2D1.RenderTarget _target;
-    private readonly D2D1.LayerParameters _layer;
-
-    public LayerHelper(D2D1.RenderTarget rt, D2D1.LayerParameters layer)
-    {
-      _target = rt;
-      _layer = layer;
-      rt.PushLayer(ref _layer, null);
-    }
-
-    public void Dispose()
-    {
-      _target.PopLayer();
-      _layer.GeometricMask?.Dispose();
-    }
-
-
+    private static DXM.RawRectangleF _emptyClipBounds = new DXM.RawRectangleF(0f, 0f, 999999, 999999);
     public static IDisposable Create(D2D1.RenderTarget target, PxSize size, float opacity)
     {
-      return new LayerHelper(
-        target,
-        CreateLayerParams(new DXM.RawRectangleF(0, 0, size.Width, size.Height), opacity)
+      var bounds = new DXM.RawRectangleF(0, 0, size.Width, size.Height);
+      return opacity < 1f
+        ? new ComplexLayer(target, ref bounds, null, opacity)
+        : new SimpleLayer(target, ref bounds) as IDisposable;
+    }
+
+    public static IDisposable Create(RendererDirect2D render, IElement element, IFrameContext context)
+    {
+      var opacity = element.GetOpacity();
+      var path = element.GetClipPath();
+      if (opacity >= 1f && path == null) return null;
+
+      return Create(
+        render.Target,
+        render.GetClipGeometry(element, context, path),
+        opacity,
+        false,
+        ref _emptyClipBounds
       );
     }
 
-    private static DXM.RawRectangleF EmptyClipBounds = new DXM.RawRectangleF(0f, 0f, 999999, 999999);
-
-    public static IDisposable Create(
-      D2D1.RenderTarget target,
-      FontManager fontManager,
-      IElement element,
-      IFrameContext context
-    )
-    {
-      return Create(target, fontManager, element, context, false, ref EmptyClipBounds);
-    }
-    public static IDisposable Create(
-      D2D1.RenderTarget target,
-      FontManager fontManager,
-      IElement element,
-      IFrameContext context,
-      PxSize clipSize
-    )
+    public static IDisposable Create(RendererDirect2D render, IElement element, IFrameContext context, PxSize clipSize)
     {
       var clip = new DXM.RawRectangleF(0f, 0f, clipSize.Width, clipSize.Height);
-      return Create(target, fontManager, element, context, true, ref clip);
+      return Create(
+        render.Target,
+        render.GetClipGeometry(element, context, element.GetClipPath()),
+        element.GetOpacity(),
+        true,
+        ref clip
+      );
     }
 
-    private static IDisposable Create(
-      D2D1.RenderTarget target,
-      FontManager fontManager,
-      IElement element,
-      IFrameContext context,
-      bool clipElement,
-      ref DXM.RawRectangleF clipBounds 
-    )
+    private static IDisposable Create(D2D1.RenderTarget target, D2D1.Geometry geometryPath, float opacity,bool clipElement, ref DXM.RawRectangleF clipBounds)
     {
-      var opacity = element.GetOpacity();
-      var clip = element.GetClipPath();
-      return !clipElement && clip == null && opacity >= 1
-        ? null
-        : new LayerHelper(
-          target,
-          CreateLayerParams(
-            clip == null
-              ? null
-              : ClipPathBuilder.Create(target, fontManager, context, clip, element),
-            opacity,
-            ref clipBounds
-          )
-        );
+      var complexClip = geometryPath != null || opacity < 1.0f;
+      var simpleClip = !complexClip && clipElement;
+
+      return complexClip
+        ? new ComplexLayer(target, ref clipBounds, geometryPath, opacity)
+        : simpleClip
+          ? new SimpleLayer(target, ref clipBounds)
+          : (IDisposable) null;
     }
 
-    private static readonly DXM.RawMatrix3x2 Identity = DX.Matrix3x2.Identity;
 
-    private static D2D1.LayerParameters CreateLayerParams(D2D1.Geometry geom, float opacity, ref DXM.RawRectangleF clipBounds)
+    private class SimpleLayer : IDisposable
     {
-      return new D2D1.LayerParameters()
+      private readonly D2D1.RenderTarget _target;
+
+      internal SimpleLayer(D2D1.RenderTarget target, ref DXM.RawRectangleF clipBounds)
       {
-        GeometricMask = geom,
-        MaskTransform = Identity,
-        ContentBounds = clipBounds,
-        LayerOptions = D2D1.LayerOptions.None,
-        Opacity = opacity,
-        OpacityBrush = null
-      };
-    }
+        _target = target;
+        target.PushAxisAlignedClip(clipBounds, D2D1.AntialiasMode.PerPrimitive);
+      }
 
-    private static D2D1.LayerParameters CreateLayerParams(DXM.RawRectangleF bounds, float opacity)
-    {
-      return new D2D1.LayerParameters()
+      public void Dispose()
       {
-        ContentBounds = bounds,
-        LayerOptions = D2D1.LayerOptions.None,
-        Opacity = opacity,
-        OpacityBrush = null
-      };
+        _target.PopAxisAlignedClip();
+      }
     }
 
+    private class ComplexLayer : IDisposable
+    {
+      private readonly D2D1.RenderTarget _target;
+      private readonly D2D1.Geometry _geometry;
 
+      internal ComplexLayer(D2D1.RenderTarget target, ref DXM.RawRectangleF clipBounds, D2D1.Geometry geometryPath,
+        float opacity)
+      {
+        _target = target;
+        _geometry = geometryPath;
+        target.PushLayer(clipBounds, geometryPath, opacity);
+      }
+
+      public void Dispose()
+      {
+        _geometry?.Dispose();
+        _target.PopLayer();
+      }
+    }
   }
 }

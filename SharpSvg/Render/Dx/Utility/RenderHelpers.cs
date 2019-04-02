@@ -10,7 +10,27 @@ namespace Peracto.Svg.Render.Dx.Utility
 {
   public static class RenderHelpers
   {
-    
+    private static readonly DXM.RawMatrix3x2 Identity = DX.Matrix3x2.Identity;
+
+    public static void PushLayer(
+      this D2D1.RenderTarget target,
+      DXM.RawRectangleF clipBounds,
+      D2D1.Geometry geometryPath,
+      float opacity)
+    {
+      var layerParameters = new D2D1.LayerParameters()
+      {
+        GeometricMask = geometryPath,
+        MaskTransform = Identity,
+        ContentBounds = clipBounds,
+        LayerOptions = D2D1.LayerOptions.None,
+        Opacity = opacity,
+        OpacityBrush = null
+      };
+      target.PushLayer(ref layerParameters, null);
+    }
+
+
     public static D2D1.CapStyle ToDx(this LineCap lineCap)
     {
       switch (lineCap)
@@ -80,7 +100,6 @@ namespace Peracto.Svg.Render.Dx.Utility
     {
       return new DX.Matrix3x2(m.M11, m.M12, m.M21, m.M22, m.M31, m.M32);
     }
-
 
     public static DXM.RawMatrix3x2 ToDx(this ITransform transform)
     {

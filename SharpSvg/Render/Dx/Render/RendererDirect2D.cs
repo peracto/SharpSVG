@@ -1,5 +1,6 @@
 ﻿using Peracto.Svg.Barcode;
 using Peracto.Svg.Brush;
+using Peracto.Svg.Clipping;
 using Peracto.Svg.Render.Dx.Brush;
 using Peracto.Svg.Render.Dx.Font;
 using Peracto.Svg.Render.Dx.IO;
@@ -8,7 +9,6 @@ using Peracto.Svg.Render.Dx.Utility;
 using Peracto.Svg.Types;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using D2D1 = SharpDX.Direct2D1;
@@ -68,6 +68,14 @@ namespace Peracto.Svg.Render.Dx.Render
     }
 
     public RenderControllerBase Base => _renderBase;
+
+    public D2D1.Geometry GetClipGeometry(IElement element, IFrameContext context, IClip clip)
+    {
+      return clip == null
+        ? null
+        : ClipPathBuilder.Create(Target, FontManager, context, clip, element);
+    }
+
 
     public D2D1.Bitmap LoadImage(Stream stream)
     {
@@ -285,7 +293,7 @@ namespace Peracto.Svg.Render.Dx.Render
 
       if (MathEx.IsZero(bounds.Width) || MathEx.IsZero(bounds.Height)) return;
 
-      var fillBrush = CreateBrush(element, context, fill.Brush, fill.Opacity);
+      var fillBrush = fill==null?null:CreateBrush(element, context, fill.Brush, fill.Opacity);
       var strokeBrush = strokeStyle.Width > 0 ? CreateBrush(element, context, strokeStyle.Brush, strokeStyle.Opacity) : null;
       var rect = bounds.ToDx();
 

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using Peracto.Svg.Clipping;
 
-namespace Peracto.Svg.Converters
+namespace Peracto.Svg.Clipping
 {
   public class ClipPathFactory : IClipPathFactory
   {

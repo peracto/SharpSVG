@@ -5,7 +5,6 @@ namespace Peracto.Svg.Types
 {
   public struct Measure
   {
-
     public static readonly Measure None = new Measure(0f, MeasureUnit.None, MeasureUsage.None);
     public static readonly Measure One = new Measure(1f, MeasureUnit.User, MeasureUsage.None);
     public static readonly Measure ZeroH = new Measure(0f, MeasureUnit.User, MeasureUsage.Horizontal);

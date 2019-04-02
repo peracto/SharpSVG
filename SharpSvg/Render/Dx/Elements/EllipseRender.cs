@@ -8,8 +8,8 @@ namespace Peracto.Svg.Render.Dx.Elements
   {
     public static Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
-      using (TransformHelper.Create(render.Target, element, context, false))
-      using (LayerHelper.Create(render.Target, render.FontManager, element, context))
+      using (TransformHelper.Create(render, element, context))
+      using (LayerHelper.Create(render, element, context))
       {
         render.DrawEllipse(
           element,

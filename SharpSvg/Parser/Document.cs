@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Peracto.Svg.Accessor;
+using System;
 using System.Collections.Generic;
-using Peracto.Svg.Accessor;
 
 namespace Peracto.Svg.Parser
 {

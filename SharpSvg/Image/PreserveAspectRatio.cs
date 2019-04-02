@@ -1,6 +1,6 @@
-﻿using System;
-using Peracto.Svg.Transform;
-using Peracto.Svg.Types;
+﻿using Peracto.Svg.Types;
+using System;
+// ReSharper disable SwitchStatementMissingSomeCases
 
 namespace Peracto.Svg.Image
 {
@@ -42,25 +42,13 @@ namespace Peracto.Svg.Image
       }
     }
 
-    private float CalcOffset2(PerspectiveRatioAlign a, float rh, float ih)
-    {
-      switch (a)
-      {
-        case PerspectiveRatioAlign.Min: return 0;
-        case PerspectiveRatioAlign.Mid: return -((ih / 2) - (rh / 2));
-        case PerspectiveRatioAlign.Max: return rh - ih;
-        default: return 0;
-      }
-    }
-
-
     public PxMatrix CalcMatrix(PxSize viewPort, PxRectangle imageSize)
     {
       if (Option == PreserveAspectRatioOption.None)
       {
         return PxMatrix.Translation(
-          viewPort.Height / imageSize.Height,
           viewPort.Width / imageSize.Width,
+          viewPort.Height / imageSize.Height,
           0,
           0
         );
@@ -88,98 +76,6 @@ namespace Peracto.Svg.Image
         imageSize.X + CalcOffset(AlignX, viewPort.Width, scaledW),  // / scaleX,
         imageSize.Y + CalcOffset(AlignY, viewPort.Height, scaledH) // / scaleY
       );
-    }
-
-    public PxMatrix CalcMatrixOld(PxSize viewPort, PxRectangle imageSize)
-    {
-      switch (Option)
-      {
-        case PreserveAspectRatioOption.None:
-        {
-          return PxMatrix.Translation(
-            viewPort.Height / imageSize.Height,
-            viewPort.Width / imageSize.Width,
-            0,
-            0
-          );
-        }
-        case PreserveAspectRatioOption.Meet:
-        {
-          var scale = Math.Min(
-            viewPort.Height / imageSize.Height,
-            viewPort.Width / imageSize.Width
-          );
-
-          var scaledW = imageSize.Width * scale;
-          var scaledH = imageSize.Height * scale;
-
-          var scaleX = scaledW / imageSize.Width;
-          var scaleY = scaledH / imageSize.Height;
-
-          return PxMatrix.Translation(
-            scaleX,
-            scaleY,
-            imageSize.X + Math.Max(CalcOffset(AlignX, viewPort.Width, scaledW), 0),// / scaleX,
-            imageSize.Y + Math.Max(CalcOffset(AlignY, viewPort.Height, scaledH), 0)// / scaleY
-          );
-        }
-        case PreserveAspectRatioOption.Slice:
-        {
-          var scale = viewPort.Width / imageSize.Width;
-          var scaledH = imageSize.Height * scale;
-
-          return PxMatrix.Translation(
-            0,
-            scaledH / imageSize.Height,
-            0,
-            CalcOffset2(AlignY, viewPort.Height, scaledH)
-          );
-        }
-        default:
-          throw new ArgumentOutOfRangeException();
-      }
-    }
-
-    public PxRectangle ApplyAspectRatio(PxRectangle viewPort, PxSize imageSize)
-    {
-      switch (Option)
-      {
-        case PreserveAspectRatioOption.None:
-        {
-          return viewPort;
-        }
-        case PreserveAspectRatioOption.Meet:
-        {
-          var scale = Math.Min(
-            viewPort.Height / imageSize.Height,
-            viewPort.Width / imageSize.Width
-          );
-
-          var scaledW = imageSize.Width * scale;
-          var scaledH = imageSize.Height * scale;
-
-          return new PxRectangle(
-            viewPort.X + Math.Max(CalcOffset(AlignX, viewPort.Width, scaledW), 0),
-            viewPort.Y + Math.Max(CalcOffset(AlignY, viewPort.Height, scaledH), 0),
-            scaledW,
-            scaledH
-          );
-        }
-        case PreserveAspectRatioOption.Slice:
-        {
-          var scale = viewPort.Width / imageSize.Width;
-          var scaledH = imageSize.Height * scale;
-
-          return new PxRectangle(
-            viewPort.X,
-            viewPort.Y + CalcOffset2(AlignY, viewPort.Height, scaledH),
-            viewPort.Width,
-            scaledH
-          );
-        }
-        default:
-          throw new ArgumentOutOfRangeException();
-      }
     }
   }
 }

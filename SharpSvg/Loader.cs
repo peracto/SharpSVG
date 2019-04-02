@@ -1,14 +1,13 @@
-﻿using Peracto.Svg.Accessor;
+﻿using ExCSS;
+using Peracto.Svg.Accessor;
+using Peracto.Svg.Css;
 using Peracto.Svg.Parser;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
-using ExCSS;
-using Peracto.Svg.Css;
 
 namespace Peracto.Svg
 {
@@ -84,7 +83,7 @@ namespace Peracto.Svg
 
     private class StyleHelper
     {
-      private IDictionary<string,(IElementAttribute attr,int specificity)> _styles = new Dictionary<string, (IElementAttribute Attr, int specificity)>();
+      private readonly IDictionary<string,(IElementAttribute attr,int specificity)> _styles = new Dictionary<string, (IElementAttribute Attr, int specificity)>();
 
       public void Add(IElementAttribute attr, int specificity)
       {
@@ -100,7 +99,7 @@ namespace Peracto.Svg
       }
     }
 
-    private IEnumerable<(ExCSS.StyleRule Rule, ExCSS.BaseSelector Selector)> GetSelectors(ExCSS.Parser cssParser,IDocument document)
+    private static IEnumerable<(StyleRule Rule, BaseSelector Selector)> GetSelectors(ExCSS.Parser cssParser,IDocument document)
     {
       foreach (var style in document.RootElement.Descendants("style"))
       {
@@ -121,7 +120,7 @@ namespace Peracto.Svg
       }
     }
 
-    private IEnumerable<IElementAttribute> GetStyles(ExCSS.Parser cssParser, string value)
+    private static IEnumerable<IElementAttribute> GetStyles(ExCSS.Parser cssParser, string value)
     {
       var sheet = cssParser.Parse("#dummyxx{" + value + "}");
       foreach (var rule in sheet.StyleRules)
@@ -183,7 +182,7 @@ namespace Peracto.Svg
     {
       var stack = new Stack<IElement>();
       var doc = new Document(baseUri);
-      var isValidNamespace = true;
+
       IElement current = doc;
 
       while (await reader.ReadAsync())

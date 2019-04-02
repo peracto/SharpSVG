@@ -2,7 +2,6 @@
 {
     public enum BrushType
     {
-        CurrentColor,
         None,
         SolidColor,
         LinearGradient,

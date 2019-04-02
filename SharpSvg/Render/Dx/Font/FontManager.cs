@@ -51,6 +51,7 @@ namespace Peracto.Svg.Render.Dx.Font
         9999999
         );
 
+      // ReSharper disable once SwitchStatementMissingSomeCases
       switch (font.TextDecoration)
       {
         case TextDecoration.LineThrough:
@@ -64,8 +65,9 @@ namespace Peracto.Svg.Render.Dx.Font
       return tl;
     }
 
-    private DW.FontStyle GetFontStyle(FontStyle value)
+    private static DW.FontStyle GetFontStyle(FontStyle value)
     {
+      // ReSharper disable once SwitchStatementMissingSomeCases
       switch (value)
       {
         case FontStyle.Normal:
@@ -73,13 +75,12 @@ namespace Peracto.Svg.Render.Dx.Font
         case FontStyle.Italic:
         case FontStyle.Oblique:
           return DW.FontStyle.Oblique;
-        case FontStyle.Inherit:
         default:
           return DW.FontStyle.Normal;
       }
     }
 
-    private DW.FontStretch GetFontStretch(FontStretch value)
+    private static DW.FontStretch GetFontStretch(FontStretch value)
     {
       switch (value)
       {
@@ -98,7 +99,7 @@ namespace Peracto.Svg.Render.Dx.Font
       }
     }
 
-    private DW.FontWeight GetFontWeight(FontWeight value)
+    private static DW.FontWeight GetFontWeight(FontWeight value)
     {
       switch (value)
       {

@@ -1,17 +1,13 @@
 ﻿using Peracto.Svg.Render.Dx.IO;
 using Peracto.Svg.Render.Dx.Render;
 using Peracto.Svg.Render.Dx.Utility;
-using Peracto.Svg.Types;
-using System;
 using System.Threading.Tasks;
-using Peracto.Svg.Image;
 using D2D1 = SharpDX.Direct2D1;
-using DX = SharpDX;
 using DXM = SharpDX.Mathematics.Interop;
 
 namespace Peracto.Svg.Render.Dx.Elements
 {
-  public static class ImageRender 
+  public static class ImageRender
   {
     public static async Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
@@ -19,147 +15,53 @@ namespace Peracto.Svg.Render.Dx.Elements
 
       if (renderStream == null) return;
 
+      // ReSharper disable once SwitchStatementMissingSomeCases
       switch (renderStream.RenderStreamType)
       {
         case RenderStreamType.Document:
-          await RenderDocument(element, context, render, renderStream.Document);
+          await renderStream.Document.Render(element, context, render);
           return;
         case RenderStreamType.Bitmap:
-          RenderBitmap(element, context, render, renderStream.Bitmap);
+          renderStream.Bitmap.Render(element, context, render);
           return;
-        case RenderStreamType.Internal:
-        case RenderStreamType.Invalid:
         default:
           return;
       }
     }
 
-    private static void RenderBitmap(IElement element, IFrameContext context, RendererDirect2D render,
-      D2D1.Bitmap bitmap)
+    private static void Render(this D2D1.Bitmap bitmap, IElement element, IFrameContext context, RendererDirect2D render)
     {
-      var ratio = element.GetPreserveAspectRatio();
       var size = element.GetSize(context, context.Size);
+      var viewPort = bitmap.Size.FromDx().AsRectangle();
 
-      using (TransformHelper.Create(render.Target, element, context, true))
-      using (LayerHelper.Create(render.Target, render.FontManager, element, context, size))
+      using (TransformHelper.CreatePosition(render, element, context))
+      using (LayerHelper.Create(render, element, context, size))
+      using (TransformHelper.Create(render, element.GetPreserveAspectRatio().CalcMatrix(size, viewPort)))
       {
-        if (ratio.Option == PreserveAspectRatioOption.None)
-        {
-          render.Target.DrawBitmap(
-            bitmap,
-            new DXM.RawRectangleF(0, 0, size.Width, size.Height),
-            element.GetOpacity(),
-            D2D1.BitmapInterpolationMode.NearestNeighbor
-          );
-
-        }
-        else
-        {
-          using (new TransformHelper(render.Target, ratio.CalcMatrix(size, bitmap.Size.FromDx().AsRectangle())))
-          {
-            render.Target.DrawBitmap(
-              bitmap,
-              new DXM.RawRectangleF(0, 0, bitmap.Size.Width, bitmap.Size.Height),
-              element.GetOpacity(),
-              D2D1.BitmapInterpolationMode.NearestNeighbor
-            );
-          }
-        }
+        render.Target.DrawBitmap(
+          bitmap,
+          new DXM.RawRectangleF(0, 0, bitmap.Size.Width, bitmap.Size.Height),
+          element.GetOpacity(),
+          D2D1.BitmapInterpolationMode.NearestNeighbor
+        );
       }
     }
 
-    public static async Task RenderDocument(IElement element, IFrameContext context, RendererDirect2D render,
-      IDocument doc)
+    public static async Task Render(this IDocument doc,IElement element, IFrameContext context, RendererDirect2D render)
     {
-      var ratio = element.GetPreserveAspectRatio();
+      var root = doc.RootElement;
+      if (root == null) return;
+
       var size = element.GetSize(context, context.Size);
-
-      var child = doc.RootElement;
-      if (child == null) return;
-
-      var viewPort = child.TryGetViewBox(out var viewBox)
-        ? viewBox.AsRectangle()
-        : element.GetSize(context, context.Size).AsRectangle();
-
+      var viewPort = root.GetViewBox()?.AsRectangle() ?? size.AsRectangle();
       var newContext = context.Create(viewPort.Size);
 
-      using (TransformHelper.Create(render.Target, element, context, true))
-      using (LayerHelper.Create(render.Target, render.FontManager, element, context, size))
-      using (new TransformHelper(render.Target, ratio.CalcMatrix(size, viewPort)))
-        await render.GetRenderer(child.ElementType)(child, newContext, render);
+      using (TransformHelper.CreatePosition(render, element, context))
+      using (TransformHelper.Create(render, element.GetPreserveAspectRatio().CalcMatrix(size, viewPort)))
+      using (LayerHelper.Create(render, element, context, viewPort.Size))
+        foreach (var child in root.Children)
+          await render.GetRenderer(child.ElementType)(child, newContext, render);
     }
-/*
-
-    private static async Task RenderDocument2(IElement element, IFrameContext context, RendererDirect2D render, IDocument doc)
-    {
-      var fragment = doc?.RootElement;
-      if (fragment == null) return;
-
-      using (LayerHelper.Create(render.Target, render.FontManager, element, context, true))
-      {
-        var imageSize = element.GetSize(context, context.Size);
-        var imageState = context.Create(imageSize);
-
-        var fragmentVirtualSize = fragment.TryGetViewBox(out var viewBox)
-          ? viewBox.Size
-          : fragment.GetSize(imageState, imageState.Size);
-
-        var aspectRect = element
-          .GetPreserveAspectRatio()
-          .ApplyAspectRatio(imageSize.AsRectangle(), fragmentVirtualSize);
-
-        using (CreateClipFrame(element, imageSize, render))
-        {
-          var matrix =
-            DX.Matrix3x2.Translation(aspectRect.X, aspectRect.Y) *
-            DX.Matrix3x2.Scaling(imageSize.Width / fragmentVirtualSize.Width,
-              imageSize.Height / fragmentVirtualSize.Height);
-
-          render.Target.Transform = matrix * render.Target.Transform;
-
-          var fragmentState = imageState.Create(fragmentVirtualSize);
-          foreach (var child in fragment.Children)
-            await render.GetRenderer(child.ElementType)(child, fragmentState, render);
-        }
-      }
-    }
-
-    private static IDisposable CreateClipFrame(IElement element, PxSize frameSize, RendererDirect2D render)
-    {
-      return new LayerHelper(
-        render.Target,
-        new D2D1.LayerParameters()
-        {
-          ContentBounds = new DXM.RawRectangleF(0, 0, frameSize.Width, frameSize.Height),
-          LayerOptions = D2D1.LayerOptions.None,
-          Opacity = element.GetOpacity(),
-          OpacityBrush = null
-        });
-    }*/
   }
 }
-/*
-   public D2D1.Bitmap GetBitmap(D2D1.Bitmap frame, RendererDirect2D render)
-   {
-     //frame.
-     //using (var converter = new SharpDX.WIC.FormatConverter(render.Base.WicFactory))
-     using (var scaler = new SharpDX.WIC.BitmapScaler(render.Base.WicFactory))
-     {
-       var size = frame.Size;
-       // var aspectSize = aspect.ApplyAspectRatio(bounds, new Geometry.Size(size.Width, size.Height)).Size;
 
-       /*   var scale = Math.Min(Math.Min(
-            aspectSize.Width / size.Width,
-            aspectSize.Height / size.Height
-            ) * 10.5, 1.0f);
-       scaler.Initialize(frame, (int)(size.Width * scale), (int)(size.Height * scale), WIC.BitmapInterpolationMode.HighQualityCubic);
-            *x/
-
-       scaler.Initialize(frame, (int)(size.Width + 0.5), (int)(size.Height + 0.5), SharpDX.WIC.BitmapInterpolationMode.HighQualityCubic);
-       //converter.Initialize(scaler, WIC.PixelFormat.Format32bppPRGBA);
-       // converter.Initialize(frame, WIC.PixelFormat.Format32bppPRGBA);
-
-       return D2D1.Bitmap.FromWicBitmap(render.Target, scaler);
-     }
-   }
-*/

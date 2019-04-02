@@ -1,36 +1,23 @@
-﻿using System;
-using Peracto.Svg.Render.Dx.Render;
+﻿using Peracto.Svg.Render.Dx.Render;
 using Peracto.Svg.Render.Dx.Utility;
+using System.Threading.Tasks;
 
 namespace Peracto.Svg.Render.Dx.Elements
 {
-  public static class SymbolRender 
+  public static class SymbolRender
   {
-    public static async System.Threading.Tasks.Task Render(IElement element, IFrameContext context, RendererDirect2D render)
+    public static async Task Render(IElement element, IFrameContext context,RendererDirect2D render)
     {
       if (element.Parent.ElementType != "use") return;
 
-      using (CreateFrame(element, context, render, out var newstate))
+      var size = element.GetSize(context, context.Size);
+      var viewPort = element.GetViewBox()?.AsRectangle() ?? size.AsRectangle();
+
+      var newContext = context.Create(viewPort.Size);
+
+      using (TransformHelper.Create(render, element.GetPreserveAspectRatio().CalcMatrix(size, viewPort)))
         foreach (var child in element.Children)
-          await render.GetRenderer(child.ElementType)(child, newstate, render);
-    }
-
-    private static IDisposable CreateFrame(IElement element, IFrameContext context, RendererDirect2D render, out IFrameContext newContext)
-    {
-      var viewSize = element.TryGetViewBox(out var viewBox)
-        ? viewBox.AsRectangle()
-        : element.GetSize(context, context.Size).AsRectangle(0,0);
-
-      newContext = context.Create(viewSize.Size);
-
-      return viewBox == null
-        ? null
-        : new TransformHelper(
-          render.Target,
-          element
-            .GetPreserveAspectRatio()
-            .CalcMatrix(context.Size, viewSize)
-        );
+          await render.GetRenderer(child.ElementType)(child, newContext, render);
     }
   }
 }

@@ -1,9 +1,9 @@
-﻿using System.IO;
+﻿using Peracto.Svg.Render.Dx.IO;
+using System.IO;
 using System.Linq;
 using System.Printing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Peracto.Svg.Render.Dx.IO;
 using DX = SharpDX;
 
 namespace Peracto.Svg.Render.Dx.Printing

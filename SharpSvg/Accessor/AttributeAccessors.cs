@@ -1,7 +1,5 @@
-﻿using System;
-using Peracto.Svg.Brush;
+﻿using Peracto.Svg.Brush;
 using Peracto.Svg.Clipping;
-using Peracto.Svg.Converters;
 using Peracto.Svg.Image;
 using Peracto.Svg.Paths;
 using Peracto.Svg.Text;

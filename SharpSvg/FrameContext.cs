@@ -7,20 +7,20 @@ namespace Peracto.Svg
   {
     const float Dpi = 96f;
 
-    public static IFrameContext CreateRoot(float width, float height)
+    public static IFrameContext CreateRoot(PxSize size)
     {
-      return new FrameContext(width, height,1);
+      return new FrameContext(size,1);
     }
 
-    private FrameContext(float width, float height, int layerId)
+    private FrameContext(PxSize size, int layerId)
     {
-      Size = new PxSize(width, height);
+      Size = size;
       LayerId = layerId;
     }
 
     public IFrameContext Create(PxSize size)
     {
-      return new FrameContext(size.Width, size.Height,LayerId+1);
+      return new FrameContext(size,LayerId+1);
     }
 
     public PxSize Size { get; }

@@ -3,21 +3,23 @@ using System.Text.RegularExpressions;
 
 namespace Peracto.Svg.Converters
 {
-    public class TokenListAttributeConverter : AttributeConverterBase<string[]>
+  public class TokenListAttributeConverter : AttributeConverterBase<string[]>
+  {
+    private readonly string _splitRegexString;
+
+    public TokenListAttributeConverter(string name, string splitRegexString) : base(name)
     {
-        private readonly string _splitRegexString;
+      _splitRegexString = splitRegexString;
+    }
 
-        public TokenListAttributeConverter(string name,string splitRegexString) : base(name)
-        {
-            _splitRegexString = splitRegexString;
-        }
-
-        protected override bool TryCreate(string value, out string[]  rc)
-        {
-            rc = (from a in Regex.Split(value.Trim(), _splitRegexString)
-                where !string.IsNullOrEmpty(a)
-                select a).ToArray();
-            return rc.Length > 0;
-        }
+    protected override bool TryCreate(string value, out string[] rc)
+    {
+      rc = (
+        from a in Regex.Split(value.Trim(), _splitRegexString)
+        where !string.IsNullOrEmpty(a)
+        select a
+      ).ToArray();
+      return rc.Length > 0;
+    }
   }
 }

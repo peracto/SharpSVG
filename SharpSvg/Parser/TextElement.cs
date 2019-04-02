@@ -16,7 +16,7 @@ namespace Peracto.Svg.Parser
 
     private TextElement(string content) : base(XDefinition, EmptyAttributes)
     {
-      this.Content = content;
+      Content = content;
     }
   }
 }

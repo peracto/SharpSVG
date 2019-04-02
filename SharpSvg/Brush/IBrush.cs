@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Peracto.Svg.Transform;
-
-namespace Peracto.Svg.Brush
+﻿namespace Peracto.Svg.Brush
 {
   public interface IBrush
   {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using DW = SharpDX.DirectWrite;
@@ -47,7 +46,7 @@ namespace Peracto.Svg.Render.Dx.Font
         }
       }
 
-      return _fontDict.TryGetValue("calibri", out var ff2)
+      return _fontDict.TryGetValue("Calibri", out var ff2)
         ? ff2.Family
         : null;
     }

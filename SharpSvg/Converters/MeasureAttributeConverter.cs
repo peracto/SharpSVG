@@ -1,6 +1,5 @@
-﻿using System;
+﻿using Peracto.Svg.Types;
 using System.Text.RegularExpressions;
-using Peracto.Svg.Types;
 
 namespace Peracto.Svg.Converters
 {

@@ -22,8 +22,8 @@ namespace Peracto.Svg.Render.Dx.Elements
 
     public static Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
-      using (TransformHelper.Create(render.Target, element, context, false))
-      using (LayerHelper.Create(render.Target, render.FontManager, element, context))
+      using (TransformHelper.Create(render, element, context))
+      using (LayerHelper.Create(render, element, context))
       {
         var font = element.GetFont(context);
         var fill = element.GetFill(context);
@@ -39,15 +39,14 @@ namespace Peracto.Svg.Render.Dx.Elements
             var textSize = new PxSize(textLayout.Metrics.WidthIncludingTrailingWhitespace, textLayout.Metrics.Height);
             var scale = CalcScale(frameSize,textSize);
 
-            var matrix = DX.Matrix3x2.Transformation(
+            var matrix = PxMatrix.Translation(
               scale,
               scale,
-              0,
               (frameSize.Width - (scale * textSize.Width)) / 2f,
               (frameSize.Height - (scale * textSize.Height)) / 2f
             );
 
-            using (new TransformHelper(render.Target, matrix))
+            using (TransformHelper.Create(render, matrix))
             {
               render.Target.DrawTextLayout(
                 new DXM.RawVector2(0, 0),

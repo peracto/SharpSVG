@@ -1,7 +1,6 @@
 ﻿using Peracto.Svg.Render.Dx.Elements;
 using Peracto.Svg.Render.Dx.Font;
 using Peracto.Svg.Render.Dx.IO;
-using Peracto.Svg.Render.Dx.Utility;
 using System;
 using System.IO;
 using System.Linq;

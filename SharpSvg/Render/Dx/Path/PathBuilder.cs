@@ -1,9 +1,9 @@
-﻿using System;
-using Peracto.Svg.Paths;
+﻿using Peracto.Svg.Paths;
 using Peracto.Svg.Render.Dx.Utility;
 using Peracto.Svg.Types;
-using DX = SharpDX;
+using System;
 using D2D1 = SharpDX.Direct2D1;
+using DX = SharpDX;
 
 // ReSharper disable PossibleNullReferenceException
 

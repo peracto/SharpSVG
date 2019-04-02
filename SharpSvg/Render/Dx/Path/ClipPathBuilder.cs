@@ -1,14 +1,14 @@
-﻿using Peracto.Svg.Clipping;
+﻿using Peracto.Svg.Brush;
+using Peracto.Svg.Clipping;
+using Peracto.Svg.Render.Dx.Font;
 using Peracto.Svg.Render.Dx.Utility;
 using Peracto.Svg.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Peracto.Svg.Brush;
-using Peracto.Svg.Render.Dx.Font;
 using SharpDX;
 using SharpDX.DirectWrite;
 using SharpDX.Mathematics.Interop;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using D2D1 = SharpDX.Direct2D1;
 
 // ReSharper disable PossibleNullReferenceException

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
-using Peracto.Svg.Brush;
+﻿using Peracto.Svg.Brush;
 using Peracto.Svg.Types;
-using System.Text.RegularExpressions;
 using Peracto.Svg.Utility;
+using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Peracto.Svg.Converters
 {
@@ -58,10 +57,6 @@ namespace Peracto.Svg.Converters
       PercentageAttributeConverter.TryParse(rc[0], out var r);
       PercentageAttributeConverter.TryParse(rc[1], out var g);
       PercentageAttributeConverter.TryParse(rc[2], out var b);
-
-      var rv = r.Unit == PercentUnit.Percent ? r.Value / 100 : r.Value / 255f;
-      var gv = g.Unit == PercentUnit.Percent ? g.Value / 100 : g.Value / 255f;
-      var bv = b.Unit == PercentUnit.Percent ? b.Value / 100 : b.Value / 255f;
 
       return SolidColourBrushFactory.GetColor(
         new PxColor(

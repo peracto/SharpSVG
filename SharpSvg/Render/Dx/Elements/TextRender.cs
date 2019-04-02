@@ -13,8 +13,8 @@ namespace Peracto.Svg.Render.Dx.Elements
   {
     public static Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
-      using (TransformHelper.Create(render.Target, element, context, false))
-      using (LayerHelper.Create(render.Target, render.FontManager, element, context))
+      using (TransformHelper.Create(render, element, context))
+      using (LayerHelper.Create(render, element, context))
       {
         var x = 0f;
         var y = 0f;
@@ -59,15 +59,15 @@ namespace Peracto.Svg.Render.Dx.Elements
       }
     }
 
-    private static float CalcBaselineOffset(DW.TextLayout tl, Text.DominantBaseline db)
+    private static float CalcBaselineOffset(DW.TextLayout tl, DominantBaseline db)
     {
       var lm = tl.GetLineMetrics()[0];
       switch (db)
       {
-        case Text.DominantBaseline.Middle:
+        case DominantBaseline.Middle:
           return (lm.Height + (lm.Height - lm.Baseline)) / 2;
-        case Text.DominantBaseline.Auto:
-        case Text.DominantBaseline.Baseline:
+        case DominantBaseline.Auto:
+        case DominantBaseline.Baseline:
           return lm.Baseline;
         default:
           return lm.Height - lm.Baseline;

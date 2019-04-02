@@ -1,9 +1,8 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Peracto.Svg.Types;
+﻿using Peracto.Svg.Types;
 using SharpDX.Mathematics.Interop;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using D2D1 = SharpDX.Direct2D1;
 using DXGI = SharpDX.DXGI;
 using WIC = SharpDX.WIC;
@@ -20,21 +19,21 @@ namespace Peracto.Svg.Render.Dx.Render
     {
       var children = document.Children.Count;
       if (children == 0) return;
-      var svg = document.Children.FirstOrDefault(e => e.ElementType == "svg");
+      var svg = document.RootElement;
       if (svg == null) throw new Exception("No svg element");
 
+      var pageSize = new PxSize(1024, 1024);
+      var context = FrameContext.CreateRoot(pageSize);
+      var size = svg.GetSize(context, pageSize);
+      var viewPort = svg.GetViewBox()?.AsRectangle() ?? size.AsRectangle();
+      var newContext = context.Create(viewPort.Size);
 
-      var xx = svg.TryGetViewBox(out var vb) ? vb.Size : new PxSize(1024, 1024);
-      var state = FrameContext.CreateRoot(xx.Width,xx.Height);
-      var size = svg.GetSize(state, xx);
-
-      using (var renderer = Create(size, out var bm))
+      using (var render = Create(viewPort.Size, out var bm))
       {
-        var dc = renderer.Target;
+        var dc = render.Target;
         dc.BeginDraw();
-        dc.Clear(new RawColor4(1f,1f,1f,1f));
-        var r = RenderRegistry.Get("svg");
-          if(r!=null) await r(svg, FrameContext.CreateRoot(dc.Size.Width, dc.Size.Height), renderer);
+        dc.Clear(new RawColor4(1f, 1f, 1f, 1f));
+        await render.GetRenderer("svg")(svg, newContext, render);
         dc.EndDraw();
 
         if (stream != null)

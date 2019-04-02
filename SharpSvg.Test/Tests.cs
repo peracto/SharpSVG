@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Peracto.Svg;
 using Peracto.Svg.Render.Dx.Render;
@@ -18,7 +19,7 @@ namespace SharpSvg.Test
         var render = new PdfRenderController(loader);
         using (var stream = File.Create(pdfName))
           await render.Render(GetFiles(testsLocation), stream);
-      //  await GetFiles(testsLocation).TestAll(loader);
+        await GetFiles(testsLocation).TestAll(loader);
       }
       catch (Exception ex)
       {   
@@ -29,7 +30,21 @@ namespace SharpSvg.Test
 
     private static IEnumerable<string> GetFiles(string testsLocation)
     {
-      foreach (var x in Directory.EnumerateFiles(Path.Combine(testsLocation, "svg", "masking"), "masking-path-04-b.svg"))
+      /*
+            foreach(var x in 
+              Directory
+                .EnumerateDirectories(@"D:\AwsDocuments\Process", "0148b671-ae6f-400f-824d-b690e935026b.aws")
+                .SelectMany(folder => Directory.EnumerateFiles(folder, "output_scrib.1.svg")
+                )
+              )
+      */
+      foreach (var x in
+          Directory
+            .EnumerateDirectories(@"D:\AwsDocuments\Process", "*.aws").Take(11)
+            .SelectMany(folder => Directory.EnumerateFiles(folder, "output_scrib.1.svg")
+            )
+        )
+//       foreach (var x in Directory.EnumerateFiles(Path.Combine(testsLocation, "svg", "masking"), "*.svg"))
       {
         Console.WriteLine($"Processing {x}");
         yield return x;

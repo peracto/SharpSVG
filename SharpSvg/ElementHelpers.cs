@@ -1,14 +1,14 @@
 ﻿using Peracto.Svg.Accessor;
+using Peracto.Svg.Brush;
+using Peracto.Svg.Clipping;
 using Peracto.Svg.Image;
 using Peracto.Svg.Paths;
 using Peracto.Svg.Text;
 using Peracto.Svg.Transform;
+using Peracto.Svg.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Peracto.Svg.Brush;
-using Peracto.Svg.Clipping;
-using Peracto.Svg.Types;
 using AA = Peracto.Svg.Accessor.AttributeAccessors;
 
 namespace Peracto.Svg
@@ -220,9 +220,9 @@ namespace Peracto.Svg
       );
     }
 
-    public static bool TryGetViewBox(this IElement element, out ViewBox viewBox)
+    public static ViewBox GetViewBox(this IElement element)
     {
-      return AA.ViewBox.TryGetValue(element,out viewBox);
+      return AA.ViewBox.GetValue(element);
     }
 
     public static PreserveAspectRatio GetPreserveAspectRatio(this IElement element)
@@ -230,10 +230,9 @@ namespace Peracto.Svg
       return AA.PreserveAspectRatio.GetValue(element);
     }
 
-    public static PxMatrix GetTransformMatrix(this IElement element)
+    public static ITransform GetTransform(this IElement element)
     {
-      var t = AA.Transform.GetValue(element);
-      return t?.Matrix ?? PxMatrix.Identity;
+      return AA.Transform.GetValue(element);
     }
 
     public static PxSize GetSize(this IElement element, IFrameContext context, PxSize defaultSize)
@@ -247,6 +246,14 @@ namespace Peracto.Svg
     public static PxPoint GetPosition(this IElement element, IFrameContext context)
     {
       return new PxPoint(
+        AA.X.GetMeasure(element, context),
+        AA.Y.GetMeasure(element, context)
+      );
+    }
+
+    public static PxMatrix GetPositionMatrix(this IElement element, IFrameContext context)
+    {
+      return PxMatrix.Translate(
         AA.X.GetMeasure(element, context),
         AA.Y.GetMeasure(element, context)
       );

@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Peracto.Svg.Accessor
@@ -31,8 +30,6 @@ namespace Peracto.Svg.Accessor
     {
       for (var i = 0; i < _attributes.Count; i++)
       {
-        if(_attributes[i]==null || value==null) 
-          Debugger.Break();
         if (_attributes[i].Name != value.Name) continue;
         _attributes[i] = value;
         return;

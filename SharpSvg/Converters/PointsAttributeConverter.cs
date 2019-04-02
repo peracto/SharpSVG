@@ -1,14 +1,13 @@
-﻿using System;
+﻿using Peracto.Svg.Types;
+using Peracto.Svg.Utility;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Peracto.Svg.Types;
-using Peracto.Svg.Utility;
 
 namespace Peracto.Svg.Converters
 {
-    public class PointsAttributeConverter : AttributeConverterBase<PxPoint[]>
+  public class PointsAttributeConverter : AttributeConverterBase<PxPoint[]>
     {
         public PointsAttributeConverter(string name) : base(name)
         {

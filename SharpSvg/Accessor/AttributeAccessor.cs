@@ -1,6 +1,4 @@
-﻿using Peracto.Svg.Types;
-
-namespace Peracto.Svg.Accessor
+﻿namespace Peracto.Svg.Accessor
 {
   public class AttributeAccessor<T> : IAccessor<T>
   {
