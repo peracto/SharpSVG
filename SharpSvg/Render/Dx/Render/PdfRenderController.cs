@@ -64,8 +64,13 @@ namespace Peracto.Svg.Render.Dx.Render
 
             var size = svg.GetSize(frameContext, pageSize);
             var viewPort = svg.GetViewBox()?.AsRectangle() ?? size.AsRectangle();
+            var ratio = svg.GetPreserveAspectRatio().CalcMatrix(size, viewPort);
+            var renderSize = new PxSize(
+              (int)(0.5f + (viewPort.Width * ratio.M11)),
+              (int)(0.5f + (viewPort.Height * ratio.M22))
+            );
 
-            if (pageStack.Count > 0 && pageY + ((int)viewPort.Height+0.5f) > 0) //pms.Height)
+            if (pageStack.Count > 0 && pageY + renderSize.Height > pms.Height)
             {
               dc.EndDraw();
               commandList.Close();
@@ -87,10 +92,10 @@ namespace Peracto.Svg.Render.Dx.Render
             }
 
             var render = new RendererDirect2D(this, dc);
-            await render.GetRenderer(svg.ElementType)(svg, FrameContext.CreateRoot(pageSize), render);
+            await render.GetRenderer(svg.ElementType)(svg, FrameContext.CreateRoot(renderSize), render);
             pageStack.Add(render);
 
-            pageY += (int)(viewPort.Height+0.5f);
+            pageY += (int)renderSize.Height;
           }
           catch (Exception ex)
           {
