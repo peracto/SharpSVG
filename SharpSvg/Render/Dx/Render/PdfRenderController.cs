@@ -65,7 +65,7 @@ namespace Peracto.Svg.Render.Dx.Render
             var size = svg.GetSize(frameContext, pageSize);
             var viewPort = svg.GetViewBox()?.AsRectangle() ?? size.AsRectangle();
 
-            if (pageStack.Count > 0 && pageY+ ((int)viewPort.Height+0.5f) > pms.Height)
+            if (pageStack.Count > 0 && pageY + ((int)viewPort.Height+0.5f) > 0) //pms.Height)
             {
               dc.EndDraw();
               commandList.Close();

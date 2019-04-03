@@ -14,7 +14,6 @@ namespace Peracto.Svg.Converters
         }
         protected override bool  TryCreate(string value, out PxPoint[] rc)
         {
-          Console.WriteLine(value);
           var list = ArgumentParser.Parse(value)
             .Select(s => float.Parse(s.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture))
             .ToArray();

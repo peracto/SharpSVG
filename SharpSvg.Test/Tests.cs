@@ -19,7 +19,7 @@ namespace SharpSvg.Test
         var render = new PdfRenderController(loader);
         using (var stream = File.Create(pdfName))
           await render.Render(GetFiles(testsLocation), stream);
-        await GetFiles(testsLocation).TestAll(loader);
+       // await GetFiles(testsLocation).TestAll(loader);
       }
       catch (Exception ex)
       {   
@@ -38,13 +38,13 @@ namespace SharpSvg.Test
                 )
               )
       */
-      foreach (var x in
+      /*foreach (var x in
           Directory
             .EnumerateDirectories(@"D:\AwsDocuments\Process", "*.aws").Take(11)
             .SelectMany(folder => Directory.EnumerateFiles(folder, "output_scrib.1.svg")
             )
-        )
-//       foreach (var x in Directory.EnumerateFiles(Path.Combine(testsLocation, "svg", "masking"), "*.svg"))
+        )*/
+       foreach (var x in Directory.EnumerateFiles(Path.Combine(testsLocation, "svg", "text"), "*.svg"))
       {
         Console.WriteLine($"Processing {x}");
         yield return x;

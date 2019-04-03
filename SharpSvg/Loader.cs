@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -217,7 +218,16 @@ namespace Peracto.Svg
               case ElementContentType.None:
                 break;
               case ElementContentType.Element:
-                current.AddChild(TextElement.Create(await reader.GetValueAsync()));
+                var str = Regex.Replace(
+                  Regex.Replace(
+                    await reader.GetValueAsync(),
+                    @"[\t\r\n]",
+                    " "
+                  ),
+                  @"\s+",
+                  " "
+                );
+                current.AddChild(TextElement.Create(str));
                 break;
               default:
                 throw new ArgumentOutOfRangeException();

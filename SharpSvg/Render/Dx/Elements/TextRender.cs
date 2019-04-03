@@ -1,4 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Peracto.Svg.Brush;
 using Peracto.Svg.Render.Dx.Render;
 using Peracto.Svg.Render.Dx.Utility;
@@ -11,6 +15,105 @@ namespace Peracto.Svg.Render.Dx.Elements
 {
   public static class TextRender 
   {
+    private class TextSpan
+    {
+      public float? X { get; }
+      public float? Y { get; }
+      public IList<TextItem> Items;
+      public TextAnchor TextAnchor;
+
+      public TextSpan(float? x, float? y, TextAnchor textAnchor, IList<TextItem> items)
+      {
+        X = x;
+        Y = y;
+        Items = items;
+        TextAnchor = textAnchor;
+      }
+    }
+
+    private class TextItem
+    {
+      public float Dx { get; }
+      public float Dy { get; }
+      public Text.Font Font { get; }
+      public string Text { get; }
+      public Fill Fill { get; }
+      public readonly DominantBaseline DominantBaseline;
+
+      public TextItem(float dx, float dy, Text.Font font, Fill fill, DominantBaseline dominantBaseline, string text)
+      {
+        Dx = dx;
+        Dy = dy;
+        Font = font;
+        Text = text;
+        Fill = fill;
+        DominantBaseline = dominantBaseline;
+      }
+    }
+
+    private static IEnumerable<TextSpan> GetSpans(IElement element, IFrameContext context)
+    {
+      var stack = new Stack<(IEnumerator<IElement> e, Text.Font font, Fill fill)>();
+      var enumerator = element.Children.GetEnumerator();
+
+      var font = element.GetFont(context);
+      var fill = element.GetFill(context);
+      var x = element.GetX(context);
+      var y = element.GetY(context);
+      var dx = element.GetDx(context);
+      var dy = element.GetDy(context);
+      var textAnchor = element.GetTextAnchor();
+      var dominantBaseline = element.GetDominantBaseline();
+      var items = new List<TextItem>();
+
+      while (true)
+      {
+        while (enumerator.MoveNext())
+        {
+          var e = enumerator.Current;
+          if (e == null) continue;
+
+          if (e is ITextContent text)
+          {
+            items.Add(new TextItem(dx, dy, font, fill, dominantBaseline, text.Content));
+            dx = 0;
+            dy = 0;
+          }
+          else if (e.ElementType == "tspan")
+          {
+            var mx = e.GetX(context);
+            var my = e.GetY(context);
+
+            dx = e.GetDx(context);
+            dy = e.GetDy(context);
+            font = e.GetFont(context, font);
+            fill = e.GetFill(context);
+            dominantBaseline = element.GetDominantBaseline();
+
+            if (mx.HasValue || my.HasValue)
+            {
+              yield return new TextSpan(x, y, textAnchor,  items);
+              textAnchor = e.GetTextAnchor();
+              items = new List<TextItem>();
+              x = mx;
+              y = my;
+            }
+
+            var c = e.Children;
+            if (c.Count == 0) continue;
+            stack.Push((enumerator, font, fill));
+            enumerator = c.GetEnumerator();
+          }
+        }
+
+        if (stack.Count == 0) break;
+        (enumerator, font, fill) = stack.Pop();
+      }
+
+      if(items.Count>0)
+        yield return new TextSpan(x,y,textAnchor, items);
+    }
+
     public static Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
       using (TransformHelper.Create(render, element, context))
@@ -21,39 +124,59 @@ namespace Peracto.Svg.Render.Dx.Elements
 
         IBrush brush = null;
         var fillOpacity = -1f;
-        SharpDX.Direct2D1.Brush fillBrush = null;
-        foreach (var t in element.GetText(context))
+        D2D1.Brush fillBrush = null;
+
+        foreach (var span in GetSpans(element, context))
         {
-          if (t.TextEntryType == TextEntryType.Cursor)
+          if (span.X.HasValue) x = span.X.Value;
+          if (span.Y.HasValue) y = span.Y.Value;
+
+          var c = span.Items.Count;
+          var layouts = new List<DW.TextLayout>(c);
+          var w = 0f;
+          for (var i = 0; i < c; i++)
           {
-            if (t.X.HasValue) x = t.X.Value;
-            if (t.Y.HasValue) y = t.Y.Value;
-            x += t.Dx;
-            y += t.Dy;
-            continue;
+            var ti = span.Items[i];
+            var l = render.CreateTextLayout(ti.Font, ti.Text, 9999999);
+            layouts.Add(l);
+            w += ti.Dx + l.Metrics.WidthIncludingTrailingWhitespace;
           }
 
-          using (var textLayout = render.CreateTextLayout(t.Font, t.Content, 999999))
+          x -= span.TextAnchor == TextAnchor.Middle
+            ? w / 2
+            : span.TextAnchor == TextAnchor.End
+              ? w
+              : 0;
+
+          for (var i = 0; i < c; i++)
           {
-            
-            if (brush != t.Fill.Brush || !MathEx.NearEqual(fillOpacity,t.Fill.Opacity))
+            var ti = span.Items[i];
+            var l = layouts[i];
+
+            if (brush != ti.Fill.Brush || !MathEx.NearEqual(fillOpacity, ti.Fill.Opacity))
             {
-              fillBrush = render.CreateBrush(element, context, t.Fill.Brush, 1f); //t.Fill.Opacity);
-              brush = t.Fill.Brush;
-              fillOpacity = t.Fill.Opacity;
+              fillBrush = render.CreateBrush(element, context, ti.Fill.Brush, ti.Fill.Opacity);
+              brush = ti.Fill.Brush;
+              fillOpacity = ti.Fill.Opacity;
             }
 
+            x += ti.Dx;
+            y += ti.Dy;
+            
             if (fillBrush != null)
               render.Target.DrawTextLayout(
-                new DXM.RawVector2(x, y - CalcBaselineOffset(textLayout, t.Font.DominantBaseline)),
-                textLayout,
+                new DXM.RawVector2(x, y - CalcBaselineOffset(l, ti.DominantBaseline)),
+                l,
                 fillBrush,
                 D2D1.DrawTextOptions.EnableColorFont
               );
 
-            x += textLayout.Metrics.WidthIncludingTrailingWhitespace;
+            x += l.Metrics.WidthIncludingTrailingWhitespace;
+
+            l.Dispose();
           }
         }
+
         return Task.CompletedTask;
 
       }

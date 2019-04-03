@@ -59,13 +59,14 @@ namespace Peracto.Svg
         AA.FontFamily.GetValue(element),
         GetFontSize(element, context),
         AA.FontWeight.GetValue(element),
-        AA.TextAnchor.GetValue(element),
+      //  AA.TextAnchor.GetValue(element),
         AA.TextDecoration.GetValue(element),
-        AA.DominantBaseline.GetValue(element),
+    //    AA.DominantBaseline.GetValue(element),
         AA.FontStretch.GetValue(element),
         AA.FontStyle.GetValue(element)
       );
     }
+
 
     private static T TryGetDefault<T>(this IAccessor<T> accessor, IElement element, T defaultValue)
     {
@@ -77,6 +78,16 @@ namespace Peracto.Svg
       return Text.Text.Create(element, context);
     }
 
+    public static TextAnchor GetTextAnchor(this IElement element)
+    {
+      return AA.TextAnchor.GetValue(element);
+    }
+    public static DominantBaseline GetDominantBaseline(this IElement element)
+    {
+      return AA.DominantBaseline.GetValue(element);
+    }
+
+
     public static Font GetFont(this IElement element, IFrameContext context, Font font)
     {
       if (font == null) return GetFont(element, context);
@@ -84,18 +95,18 @@ namespace Peracto.Svg
       var fontFamily = AA.FontFamily.TryGetDefault(element, font.Family);
       var fontSize = AA.FontSize.TryGetValue(element, out var fontSizeX) ? ComputeFontSize(element, context, fontSizeX): font.Size;
       var fontWeight = AA.FontWeight.TryGetDefault(element, font.Weight);
-      var textAnchor = AA.TextAnchor.TryGetDefault(element, font.TextAnchor);
+      //var textAnchor = AA.TextAnchor.TryGetDefault(element, font.TextAnchor);
       var textDecoration = AA.TextDecoration.TryGetDefault(element, font.TextDecoration);
-      var dominantBaseline = AA.DominantBaseline.TryGetDefault(element, font.DominantBaseline);
+//      var dominantBaseline = AA.DominantBaseline.TryGetDefault(element, font.DominantBaseline);
       var fontStretch = AA.FontStretch.TryGetDefault(element, font.Stretch);
       var style = AA.FontStyle.TryGetDefault(element, font.Style);
 
       if (font.Family == fontFamily &&
           font.Size == fontSize &&
           font.Weight == fontWeight &&
-          font.TextAnchor == textAnchor &&
+      //    font.TextAnchor == textAnchor &&
           font.TextDecoration == textDecoration &&
-          font.DominantBaseline == dominantBaseline &&
+      //    font.DominantBaseline == dominantBaseline &&
           font.Stretch == fontStretch &&
           font.Style == style)
         return font;
@@ -103,9 +114,9 @@ namespace Peracto.Svg
         fontFamily,
         fontSize,
         fontWeight,
-        textAnchor,
+     //   textAnchor,
         textDecoration,
-        dominantBaseline,
+      //  dominantBaseline,
         fontStretch,
         style
         );

@@ -5,9 +5,9 @@
     public readonly string[] Family;
     public readonly float Size;
     public readonly FontWeight Weight;
-    public readonly TextAnchor TextAnchor;
+    //public readonly TextAnchor TextAnchor;
     public readonly TextDecoration TextDecoration;
-    public readonly DominantBaseline DominantBaseline;
+  //  public readonly DominantBaseline DominantBaseline;
     public readonly FontStyle Style;
     public readonly FontStretch Stretch;
 
@@ -15,9 +15,9 @@
         string[] family,
         float size,
         FontWeight weight,
-        TextAnchor textAnchor,
+        //TextAnchor textAnchor,
         TextDecoration textDecoration,
-        DominantBaseline dominantBaseline,
+  //      DominantBaseline dominantBaseline,
         FontStretch fontStretch,
         FontStyle style
       )
@@ -25,9 +25,9 @@
       Family = family;
       Size = size;
       Weight = weight;
-      TextAnchor = textAnchor;
+    //  TextAnchor = textAnchor;
       TextDecoration = textDecoration;
-      DominantBaseline = dominantBaseline;
+   //   DominantBaseline = dominantBaseline;
       Stretch = fontStretch;
       Style = style;
     }

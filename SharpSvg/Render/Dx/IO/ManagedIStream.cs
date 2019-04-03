@@ -81,7 +81,6 @@ namespace Peracto.Svg.Render.Dx.IO
 
     void IStream.Clone(out IStream streamCopy)
     {
-      Console.WriteLine($"Cloning Stream {_streamName}");
       streamCopy = new ManagedIStream(_ioStream,_streamName);
    //   throw new NotSupportedException();
     }
