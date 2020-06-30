@@ -1,4 +1,5 @@
-﻿using Peracto.Svg.Types;
+﻿using System.Runtime.InteropServices;
+using Peracto.Svg.Types;
 
 namespace Peracto.Svg.Transform
 {
@@ -6,37 +7,44 @@ namespace Peracto.Svg.Transform
     {
         public TransformType TransformType => TransformType.Rotate;
 
-        public readonly Angle Angle;
-        public readonly PxPoint Point;
-        public bool HasCentre { get;  }
-
-        public PxMatrix Matrix { get; }
+        private readonly Measure X;
+        private readonly Measure Y;
+        public Angle Angle;
+        private readonly float _radians;
+        public bool HasCentre { get; }
 
         public RotateTransform(Angle angle)
         {
             Angle = angle;
-            Point = new PxPoint(0, 0);
             HasCentre = false;
-            Matrix = PxMatrix.Rotate(angle.ToRadians());
+            _radians = angle.ToRadians();
         }
 
-        public RotateTransform(Angle angle, float x, float y)
+        public RotateTransform(Angle angle, Measure x, Measure y)
         {
             Angle = angle;
-            Point = new PxPoint(x, y);
+            X = x;
+            Y = y;
+            _radians = angle.ToRadians();
             HasCentre = true;
-            Matrix =
-                PxMatrix.Translate(-x, -y) *
-                PxMatrix.Rotate(angle.ToRadians()) *
-                PxMatrix.Translate(x, y);
         }
 
         public override string ToString()
         {
-            return HasCentre 
-                ? $"rotate({Angle},{Point.X},{Point.Y})" 
+            return HasCentre
+                ? $"rotate({Angle},{X},{Y})"
                 : $"rotate({Angle})";
         }
 
+        public PxMatrix Resolve(IElement element, IFrameContext context)
+        {
+            if (!HasCentre) return PxMatrix.Rotate(_radians);
+            var x = X.Resolve(element, context);
+            var y = Y.Resolve(element, context);
+            return
+                PxMatrix.Translate(-x, -y) *
+                PxMatrix.Rotate(_radians) *
+                PxMatrix.Translate(x, y);
+        }
     }
 }

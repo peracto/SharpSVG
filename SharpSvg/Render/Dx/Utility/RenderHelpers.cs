@@ -101,11 +101,11 @@ namespace Peracto.Svg.Render.Dx.Utility
       return new DX.Matrix3x2(m.M11, m.M12, m.M21, m.M22, m.M31, m.M32);
     }
 
-    public static DXM.RawMatrix3x2 ToDx(this ITransform transform)
+    public static DXM.RawMatrix3x2 ToDx(this ITransform transform, IElement element, IFrameContext context)
     {
       if (transform != null)
       {
-        var m = transform.Matrix;
+        var m = transform.Resolve(element,context);
         return new DXM.RawMatrix3x2(m.M11, m.M12, m.M21, m.M22, m.M31, m.M32);
       }
       else

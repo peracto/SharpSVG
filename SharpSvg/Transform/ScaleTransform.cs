@@ -6,20 +6,22 @@ namespace Peracto.Svg.Transform
     {
         public TransformType TransformType => TransformType.Scale;
 
-        public float X { get; }
-        public float Y { get; }
-        public PxMatrix Matrix { get; }
+        public Measure X { get; }
+        public Measure Y { get; }
 
-        public ScaleTransform(float x, float y)
+        public ScaleTransform(Measure x, Measure y)
         {
             X = x;
             Y = y;
-            Matrix = PxMatrix.Scale(x, y);
         }
 
         public override string ToString()
         {
             return $"scale({X},{Y})";
+        }
+        public PxMatrix Resolve(IElement element, IFrameContext context)
+        {
+            return PxMatrix.Scale(X.Resolve(element, context), Y.Resolve(element, context));
         }
 
 

@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Peracto.Svg.Converters
 {
-  public class MeasureAttributeConverter : AttributeConverterBase<Measure>
+    public class MeasureAttributeConverter : AttributeConverterBase<Measure>
   {
     private static readonly Regex MeasureRegex = new Regex(@"^\s*([+-]?(?=\.\d|\d)(?:\d+)?(?:\.?\d*)(?:[eE][+-]?\d+)?)([a-z%]+)?\s*$");
 

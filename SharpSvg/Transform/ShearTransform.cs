@@ -5,20 +5,23 @@ namespace Peracto.Svg.Transform
     public class ShearTransform : ITransform
     {
         public TransformType TransformType => TransformType.Shear;
+        public Measure X { get; }
+        public Measure Y { get; }
 
-        public float X { get; }
-        public float Y { get; }
-        public PxMatrix Matrix { get; }
-
-        public ShearTransform(float x, float y)
+        public ShearTransform(Measure x, Measure y)
         {
             X = x;
             Y = y;
-            Matrix = PxMatrix.Skew(x,y);
         }
         public override string ToString()
         {
             return $"shear({X},{Y})";
         }
+
+        public PxMatrix Resolve(IElement element, IFrameContext context)
+        {
+            return PxMatrix.Skew(X.Resolve(element, context), Y.Resolve(element, context));
+        }
+
     }
 }

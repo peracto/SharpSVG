@@ -5,7 +5,10 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Peracto.Svg.Types;
+using SharpDX;
 using D2D1 = SharpDX.Direct2D1;
 using DW = SharpDX.DirectWrite;
 using WIC = SharpDX.WIC;
@@ -16,7 +19,10 @@ namespace Peracto.Svg.Render.Dx.Render
   {
     static readonly HttpClient Client = new HttpClient();
 
-    public ElementRenderRegistry<RendererDirect2D> RenderRegistry { get; } =
+    private static readonly Regex sWhitespace = new Regex(@"\s+");
+    public static string ReplaceWhitespace(string input, string replacement) { return sWhitespace.Replace(input, replacement); }
+
+        public ElementRenderRegistry<RendererDirect2D> RenderRegistry { get; } =
       new ElementRenderRegistry<RendererDirect2D>();
 
     public D2D1.Factory D2DFactory { get; }
@@ -28,33 +34,36 @@ namespace Peracto.Svg.Render.Dx.Render
 
     public async Task<RenderStream> LoadToStream(Uri href, Uri baseUri, Func<Stream, D2D1.Bitmap> bitmapFactory)
     {
-      switch (href.Scheme)
-      {
-        case "internal":
-          return new RenderStream(href.Fragment.Substring(1));
-        case "file":
-          var path = GetFilename(href);
+        switch (href.Scheme)
+        {
+            case "internal":
+                return new RenderStream(href.Fragment.Substring(1));
+            case "file":
+                var fn = Uri.UnescapeDataString(href.AbsolutePath);
 
-          if (path == null)
-            return new RenderStream();
-
-          if (System.IO.Path.GetExtension(path.AbsolutePath) == ".svg")
-            return new RenderStream(await Loader.Load(path, baseUri));
-
-          using (var fs = File.OpenRead(path.AbsolutePath))
-            return new RenderStream(bitmapFactory(fs));
-        case "data":
-          var data = href.OriginalString;
-          var i = data.IndexOf(",", StringComparison.Ordinal);
-          var bytes = Convert.FromBase64String(data.Substring(i + 1));
-          using (var ms = new MemoryStream(bytes))
-            return new RenderStream(bitmapFactory(ms));
-        default:
-          var response = await Client.GetAsync(href);
-          if (!response.IsSuccessStatusCode) return null;
-          using (var stream3 = await response.Content.ReadAsStreamAsync())
-            return new RenderStream(bitmapFactory(stream3));
-      }
+                if (System.IO.Path.GetExtension(fn) == ".svg")
+                    return new RenderStream(await Loader.Load(href, baseUri));
+                Console.WriteLine($"Opening image file {fn}");
+                using (var fs = File.OpenRead(fn))
+                    return new RenderStream(bitmapFactory(fs));
+            case "bigdata":
+                var data2 = href.ToString();
+                var i2 = data2.IndexOf(",", StringComparison.Ordinal);
+                var bytes2 = Convert.FromBase64String(data2.Substring(i2+ 1));
+                using (var ms = new MemoryStream(bytes2))
+                    return new RenderStream(bitmapFactory(ms));
+            case "data":
+                var data = href.OriginalString;
+                var i = data.IndexOf(",", StringComparison.Ordinal);
+                var bytes = Convert.FromBase64String(data.Substring(i + 1));
+                using (var ms = new MemoryStream(bytes))
+                    return new RenderStream(bitmapFactory(ms));
+            default:
+                var response = await Client.GetAsync(href);
+                if (!response.IsSuccessStatusCode) return null;
+                using (var stream3 = await response.Content.ReadAsStreamAsync())
+                    return new RenderStream(bitmapFactory(stream3));
+        }
     }
 
     private Uri GetFilename(Uri uri)

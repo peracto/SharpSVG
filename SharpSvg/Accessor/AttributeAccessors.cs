@@ -51,6 +51,7 @@ namespace Peracto.Svg.Accessor
     public static readonly IAccessor<object> Style = Create<object>("style");
     public static readonly IAccessor<Measure> TextLength = Create("textLength", Measure.ZeroH);
     public static readonly IAccessor<ITransform> Transform = Create<ITransform>("transform");
+    public static readonly IAccessor<ITransformOrigin> TransformOrigin = Create<ITransformOrigin>("transform-origin");
     public static readonly IAccessor<ViewBox> ViewBox = Create<ViewBox>("viewbox");
     public static readonly IAccessor<Measure> Width = Create("width", Measure.ZeroH);
     public static readonly IAccessor<Measure> X = Create("x", Measure.ZeroH);
@@ -63,7 +64,7 @@ namespace Peracto.Svg.Accessor
     //alignment-baseline 
     //baseline-shift
     //clip
-    public static readonly IAccessor<IClipPathFactory> ClipPath =Create<IClipPathFactory>("clip-path", null, true);
+    public static readonly IAccessor<IClipPathFactory> ClipPath =Create<IClipPathFactory>("clip-path"); //, null, false);
     // "clip-rule":
     // "color":
     public static readonly IAccessor<IBrushFactory> Color =Create("color", SolidColourBrushFactory.Black, true);

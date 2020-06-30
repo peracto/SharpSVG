@@ -8,7 +8,9 @@ namespace Peracto.Svg.Render.Dx.Elements
   {
     public static Task Render(IElement element, IFrameContext context, RendererDirect2D render)
     {
-      using (TransformHelper.Create(render, element, context))
+        if (TransformHelper.IsHidden(element)) return Task.CompletedTask;
+
+            using (TransformHelper.Create(render, element, context))
       using (LayerHelper.Create(render, element, context))
       {
         render.DrawLine(

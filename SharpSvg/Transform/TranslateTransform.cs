@@ -6,19 +6,24 @@ namespace Peracto.Svg.Transform
     {
         public TransformType TransformType => TransformType.Translate;
 
-        public float X { get; }
-        public float Y { get; }
-        public PxMatrix Matrix { get; }
+        public Measure X { get; }
+        public Measure Y { get; }
 
-        public TranslateTransform(float x, float y)
+        public PxMatrix Resolve(IElement element, IFrameContext context)
+        {
+            return PxMatrix.Translate(X.Resolve(element,context),Y.Resolve(element, context));
+        }
+
+        public TranslateTransform(Measure x, Measure y)
         {
             X = x;
             Y = y;
-            Matrix = PxMatrix.Translate(x, y);
         }
         public override string ToString()
         {
             return $"translate({X},{Y})";
         }
     }
+
+
 }

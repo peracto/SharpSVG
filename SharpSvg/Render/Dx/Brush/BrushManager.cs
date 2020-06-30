@@ -87,7 +87,7 @@ namespace Peracto.Svg.Render.Dx.Brush
         );
 
         if (opacity < 1) dxBrush.Opacity = opacity;
-        if (brush.GradientTransform != null) dxBrush.Transform = brush.GradientTransform.ToDx();
+        if (brush.GradientTransform != null) dxBrush.Transform = brush.GradientTransform.ToDx(element, context);
 
         if (tag != null) _brushes.Add(tag, dxBrush);
         return dxBrush;
@@ -140,7 +140,7 @@ namespace Peracto.Svg.Render.Dx.Brush
       );
 
       if (opacity < 1) dxBrush.Opacity = opacity;
-      if (brush.GradientTransform != null) dxBrush.Transform = brush.GradientTransform.ToDx();
+      if (brush.GradientTransform != null) dxBrush.Transform = brush.GradientTransform.ToDx(element, context);
 
       if (tag != null) _brushes.Add(tag, dxBrush);
       return dxBrush;

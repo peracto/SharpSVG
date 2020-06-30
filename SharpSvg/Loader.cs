@@ -62,7 +62,9 @@ namespace Peracto.Svg
       if (sourceUri.Scheme != "file")
         throw new Exception($"Don't know how to load {uri}");
 
-      using (var stream = File.OpenRead(sourceUri.AbsolutePath))
+      Console.WriteLine($"Loading document {sourceUri.AbsolutePath}");
+
+      using (var stream = File.OpenRead(Uri.UnescapeDataString(sourceUri.AbsolutePath)))
         return await Load(stream, sourceUri);
     }
 

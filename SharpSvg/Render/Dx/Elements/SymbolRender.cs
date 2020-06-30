@@ -8,7 +8,9 @@ namespace Peracto.Svg.Render.Dx.Elements
   {
     public static async Task Render(IElement element, IFrameContext context,RendererDirect2D render)
     {
-      if (element.Parent.ElementType != "use") return;
+        if (TransformHelper.IsHidden(element)) return;
+
+            if (element.Parent.ElementType != "use") return;
 
       var size = element.GetSize(context, context.Size);
       var viewPort = element.GetViewBox()?.AsRectangle() ?? size.AsRectangle();

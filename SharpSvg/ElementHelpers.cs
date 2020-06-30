@@ -133,6 +133,8 @@ namespace Peracto.Svg
           return (fontSize.Value * GetFontSize(element.Parent, context)) / 2;
         case MeasureUnit.Percentage:
           return (fontSize.Value * GetFontSize(element.Parent, context)) / 100;
+                case MeasureUnit.User:
+                    return fontSize.Value * 0.955f; //TODO: This is a hack to see if it fixes the Amazon designer overflow
         default:
           return context.ToDeviceValue(fontSize);
       }
@@ -246,7 +248,13 @@ namespace Peracto.Svg
       return AA.Transform.GetValue(element);
     }
 
-    public static PxSize GetSize(this IElement element, IFrameContext context, PxSize defaultSize)
+    public static ITransformOrigin GetTransformOrigin(this IElement element)
+    {
+        return AA.TransformOrigin.GetValue(element);
+    }
+
+
+        public static PxSize GetSize(this IElement element, IFrameContext context, PxSize defaultSize)
     {
       return new PxSize(
         AA.Width.GetMeasure(element, context,defaultSize.Width),

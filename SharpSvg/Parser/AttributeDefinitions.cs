@@ -50,9 +50,10 @@ namespace Peracto.Svg.Parser
     public static readonly NumberAttributeConverter StrokeMiterLimit = new NumberAttributeConverter("stroke-miterlimit");
     public static readonly GenericEnumConverter<SpreadMethod> SpreadMethod = new GenericEnumConverter<SpreadMethod>("spreadMethod");
     public static readonly PreserveAspectRatioConverter PreserveAspectRatio = new PreserveAspectRatioConverter("preserveaspectratio");
-    public static readonly StyleAttributeConverter StyleAttribute = new StyleAttributeConverter("style");
+  //  public static readonly StyleAttributeConverter StyleAttribute = new StyleAttributeConverter("style");
     public static readonly TokenListAttributeConverter Class = new TokenListAttributeConverter("class", @"[\s,]+");
     public static readonly TransformAttributeConverter TransformAttribute = new TransformAttributeConverter("transform");
+    public static readonly TransformOriginAttributeConverter TransformOriginAttribute = new TransformOriginAttributeConverter("transform-origin");
     public static readonly TransformAttributeConverter GradientTransformAttribute = new TransformAttributeConverter("gradientTransform");
     public static readonly ViewBoxAttributeConverter ViewBoxAttribute = new ViewBoxAttributeConverter("viewbox");
     public static readonly PathAttributeConverter D = new PathAttributeConverter("d");
@@ -60,7 +61,7 @@ namespace Peracto.Svg.Parser
     public static readonly TokenAttributeConverter TextTransform = new TokenAttributeConverter("text-transform");
     public static readonly TokenAttributeConverter WordSpacing = new TokenAttributeConverter("word-spacing");
     public static readonly TokenAttributeConverter LetterSpacing = new TokenAttributeConverter("letter-spacing");
-    public static readonly TokenListAttributeConverter FontFamily = new TokenListAttributeConverter("font-family", @"[\s,]+");
+    public static readonly TokenListAttributeConverter FontFamily = new TokenListAttributeConverter("font-family", @"\s*[,]\s*");
     public static readonly MeasureAttributeConverter FontSize = new MeasureAttributeConverter("font-size", MeasureUsage.Vertical);
     public static readonly GenericEnumConverter<GradientUnits> GradientUnits = new GenericEnumConverter<GradientUnits>("gradientUnits");
     public static readonly GenericEnumConverter<ClipPathUnits> ClipPathUnits = new GenericEnumConverter<ClipPathUnits>("clipPathUnits");

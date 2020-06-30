@@ -9,7 +9,9 @@ using SharpDX.Mathematics.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Peracto.Svg.Transform;
 using D2D1 = SharpDX.Direct2D1;
+using DXM = SharpDX.Mathematics.Interop;
 
 // ReSharper disable PossibleNullReferenceException
 
@@ -52,21 +54,37 @@ namespace Peracto.Svg.Render.Dx.Path
     }
 
 
-    private static D2D1.Geometry CreateGeometry(D2D1.RenderTarget target, FontManager fontManager, IElement element, IFrameContext context, ClipPathUnits clipPathUnits, IElement targetElement)
+    private static D2D1.Geometry CreateGeometry(D2D1.RenderTarget target, FontManager fontManager, IElement element,
+        IFrameContext context, ClipPathUnits clipPathUnits, IElement targetElement)
+    {
+        var geom = CreateGeometryInternal(target, fontManager, element, context, clipPathUnits, targetElement);
+        if (geom == null) return null;
+        var rt = element.GetTransform();
+        if (rt == null)
+            return geom;
+
+        return new D2D1.TransformedGeometry(
+            target.Factory,
+            geom,
+            rt.ToDx(element, context)
+        );
+    }
+
+    private static D2D1.Geometry CreateGeometryInternal(D2D1.RenderTarget target, FontManager fontManager, IElement element, IFrameContext context, ClipPathUnits clipPathUnits, IElement targetElement)
     {
       if (clipPathUnits == ClipPathUnits.UserSpaceOnUse)
       {
         switch (element.ElementType)
         {
           case "rect":
-            return new D2D1.RectangleGeometry(target.Factory, element.GetBounds(context).ToDx());
+              return new D2D1.RectangleGeometry(target.Factory, element.GetBounds(context).ToDx());
           case "circle":
             var r = element.GetRadius(context);
             return new D2D1.EllipseGeometry(target.Factory, new D2D1.Ellipse()
             {
-              Point = element.GetCxCy(context).ToDx(),
-              RadiusX = r,
-              RadiusY = r
+                Point = element.GetCxCy(context).ToDx(),
+                RadiusX = r,
+                RadiusY = r
             });
           case "path":
             return PathBuilder.Create(target, element.GetPath(), D2D1.FillMode.Alternate);

@@ -2,24 +2,30 @@
 
 namespace Peracto.Svg.Transform
 {
-  public class MultiTransform2 : ITransform
-  {
-    public TransformType TransformType => TransformType.Multi;
-
-    private readonly ITransform _t0;
-    private readonly ITransform _t1;
-    public PxMatrix Matrix { get; }
-
-    public MultiTransform2(ITransform t0, ITransform t1)
+    public class MultiTransform2 : ITransform
     {
-      _t0 = t0;
-      _t1 = t1;
-      Matrix = _t1.Matrix * _t0.Matrix;
-    }
+        public TransformType TransformType => TransformType.Multi;
 
-    public override string ToString()
-    {
-      return $"{_t0} {_t1}";
+        private readonly ITransform _t0;
+        private readonly ITransform _t1;
+   //     public PxMatrix Matrix { get; }
+
+        public MultiTransform2(ITransform t0, ITransform t1)
+        {
+            _t0 = t0;
+            _t1 = t1;
+ //           Matrix = _t1.Matrix * _t0.Matrix;
+        }
+
+        public override string ToString()
+        {
+            return $"{_t0} {_t1}";
+        }
+
+        public PxMatrix Resolve(IElement element, IFrameContext context)
+        {
+            return _t1.Resolve(element, context) * _t0.Resolve(element, context);
+        }
+
     }
-  }
 }

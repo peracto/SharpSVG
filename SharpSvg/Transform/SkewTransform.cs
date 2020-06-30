@@ -6,20 +6,24 @@ namespace Peracto.Svg.Transform
     {
         public TransformType TransformType => TransformType.Skew;
 
-        public float X { get; }
-        public float Y { get; }
-        public PxMatrix Matrix { get; }
+        public Measure X { get; }
+        public Measure Y { get; }
 
-        public SkewTransform(float x, float y)
+        public SkewTransform(Measure x, Measure y)
         {
             X = x;
             Y = x;
-            Matrix = PxMatrix.Skew(x, y);
         }
 
         public override string ToString()
         {
             return $"skew({X},{Y})";
         }
+
+        public PxMatrix Resolve(IElement element, IFrameContext context)
+        {
+            return PxMatrix.Skew(X.Resolve(element, context), Y.Resolve(element, context));
+        }
+
     }
 }
